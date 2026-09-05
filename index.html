@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src 'none';">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>VoidFall</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="description" content="A single-file dungeon roguelike with fifty floors, permanent progression, and ten guardians. No connection required.">
@@ -230,8 +230,25 @@ h1.title{font-size:clamp(48px,7.6vw,98px);letter-spacing:.10em;padding:0;margin:
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:22px;border-bottom:1px solid #b6c1ca18;text-align:left;font-size:13px}.settings-row span small{display:block;color:#8ea0b4;font-size:11px;line-height:1.6;margin-top:4px}.settings-row input{accent-color:#cfb280;width:18px;height:18px}.settings-row select{background:#17212c;color:#dedbd0;padding:7px;border:1px solid #8293a455;border-radius:3px}
 .settings-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:22px}.settings-actions .btn{font-size:10px;padding:10px 14px}.save-message{font-size:12px;line-height:1.7;color:#9abdad;text-align:left;margin:16px 0 0}.save-message.warning{color:#edba87}
 .settings-reset{margin-top:20px;padding-top:16px;border-top:1px solid #b65f6933;text-align:center}.settings-reset .btn{font-size:10px;padding:10px 18px}.settings-reset small{display:block;margin-top:8px;font:10px/1.6 system-ui;color:#ae8d94}
-#touchControls{display:none;position:absolute;left:20px;bottom:36px;pointer-events:auto;gap:6px}.touch-pad{display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,40px);gap:5px}.touch-pad button,.touch-extra button{background:#12202cdb;border:1px solid #c1ba9955;border-radius:5px;color:#e8dcc6;touch-action:none;user-select:none}.touch-pad button:first-child{grid-column:2}.touch-pad button:nth-child(2){grid-column:1;grid-row:2}.touch-pad button:nth-child(3){grid-column:2;grid-row:2}.touch-pad button:nth-child(4){grid-column:3;grid-row:2}.touch-extra{display:flex;flex-direction:column;gap:5px}.touch-extra button{height:40px;width:60px;font-size:10px}
-body.touch #touchControls{display:flex}body.touch #botL{bottom:133px}body.touch #quickControls{display:none}
+#cv{touch-action:none}
+#touchControls{display:none;position:fixed;inset:0;z-index:7;pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none}
+body.touch #touchControls{display:block}body.touch #quickControls{display:none}
+.touch-stick-wrap{position:absolute;bottom:max(22px,calc(env(safe-area-inset-bottom) + 14px));width:142px;height:164px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:auto}
+#moveStickWrap{left:max(16px,calc(env(safe-area-inset-left) + 12px))}#aimStickWrap{right:max(16px,calc(env(safe-area-inset-right) + 12px))}
+.touch-stick{width:126px;height:126px;position:relative;border-radius:50%;touch-action:none;background:radial-gradient(circle at 50% 48%,#26364b8a 0 20%,#111b29c9 21% 55%,#080e18dc 57%);border:1px solid #d9bd7c59;box-shadow:inset 0 0 0 7px #90a3b00a,inset 0 0 26px #83b6c21a,0 7px 28px #000a}
+.touch-stick:before,.touch-stick:after{content:'';position:absolute;pointer-events:none;opacity:.35}.touch-stick:before{inset:10px;border:1px solid #9fb0bc42;border-radius:50%}.touch-stick:after{left:50%;top:13px;bottom:13px;width:1px;background:linear-gradient(transparent,#d5c59f36,transparent);box-shadow:0 0 0 transparent;transform:translateX(-.5px)}
+.touch-stick-grid{position:absolute;left:13px;right:13px;top:50%;height:1px;background:linear-gradient(90deg,transparent,#d5c59f36,transparent);pointer-events:none}
+.touch-knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 38% 32%,#f3d99a,#b88b4e 25%,#3a4b5e 29%,#172332 67%,#0b111c 70%);border:2px solid #e7cb8a9c;box-shadow:0 0 0 5px #c5ae7430,0 5px 15px #0009,0 0 20px #f1c77816;transition:transform .05s linear}
+#aimStick .touch-knob{background:radial-gradient(circle at 50% 50%,#fff0bc 0 8%,#dc8c48 10% 22%,#453b39 25%,#172332 32% 67%,#0b111c 70%)}
+.touch-stick.active{border-color:#f2d596a8;box-shadow:inset 0 0 26px #83b6c22b,0 0 24px #e6b65c20,0 7px 28px #000a}.touch-stick.active .touch-knob{box-shadow:0 0 0 5px #dbc17a45,0 5px 15px #0009,0 0 28px #f2c56b4a}
+.touch-caption{height:28px;display:flex;align-items:center;gap:7px;font:700 8px system-ui;letter-spacing:.16em;color:#aeb8bb;text-shadow:0 2px 4px #000}.touch-caption b{color:#efd194;font-weight:700}.touch-fire-ring{position:absolute;inset:24px;border:1px dashed #d28c5266;border-radius:50%;pointer-events:none;animation:slowRevolve 16s linear infinite}
+.touch-actions{position:absolute;right:max(164px,calc(env(safe-area-inset-right) + 154px));bottom:max(24px,calc(env(safe-area-inset-bottom) + 17px));display:grid;grid-template-columns:repeat(2,58px);gap:9px;pointer-events:auto}
+.touch-action{width:58px;height:58px;border-radius:50%;padding:0;border:1px solid #d9bd7c73;background:radial-gradient(circle at 40% 30%,#29384ddf,#111b28ee 64%,#070c14f2);color:#e9d9b8;font:700 8px/1.15 system-ui;letter-spacing:.06em;touch-action:none;box-shadow:inset 0 0 0 4px #ceb5740b,0 5px 16px #0009;text-shadow:0 1px 3px #000;transition:transform .08s,background .08s,border-color .08s}
+.touch-action:active,.touch-action.pressed{transform:scale(.9);background:radial-gradient(circle,#5a4d3d,#182638 68%);border-color:#ffe1a5}.touch-action strong{display:block;color:#f6cb79;font:700 13px Georgia;margin-bottom:2px}.touch-action.interact{border-radius:15px 50% 50% 50%}
+.touch-action.cooling{opacity:.43;filter:saturate(.45);box-shadow:inset 0 0 0 4px #a8b2bb08,0 4px 12px #0008}.touch-action.cooling strong{color:#9ea5aa}
+body.touch #weaponHUD{left:50%;transform:translateX(-50%);bottom:max(18px,calc(env(safe-area-inset-bottom) + 12px));width:196px;padding:8px 11px;opacity:.82}body.touch #botL{bottom:194px;max-width:210px}body.touch #botC{bottom:max(184px,calc(env(safe-area-inset-bottom) + 178px))}body.touch .hud-actions{bottom:auto;top:max(12px,env(safe-area-inset-top))}
+@media(max-width:760px){.touch-stick-wrap{width:118px;height:138px}.touch-stick{width:104px;height:104px}.touch-knob{width:46px;height:46px;margin:-23px}.touch-actions{right:max(126px,calc(env(safe-area-inset-right) + 120px));grid-template-columns:repeat(2,52px);gap:7px}.touch-action{width:52px;height:52px}.touch-caption{font-size:7px}body.touch #weaponHUD{display:none}body.touch #botL{bottom:150px}body.touch #botC{bottom:max(148px,calc(env(safe-area-inset-bottom) + 140px))}}
+@media(max-width:520px) and (orientation:portrait){.touch-stick-wrap{bottom:max(16px,calc(env(safe-area-inset-bottom) + 10px))}.touch-actions{right:max(14px,calc(env(safe-area-inset-right) + 10px));bottom:max(142px,calc(env(safe-area-inset-bottom) + 136px));grid-template-columns:repeat(2,50px)}#aimStickWrap{right:max(12px,calc(env(safe-area-inset-right) + 8px))}#moveStickWrap{left:max(12px,calc(env(safe-area-inset-left) + 8px))}body.touch #botC{bottom:265px}}
 .motion-low *, .motion-low *::before, .motion-low *::after{animation:none!important;transition:none!important}
 #errbox{font:12px/1.6 system-ui!important;max-width:380px!important}
 @media(max-width:1000px){.menu-box{padding-left:40px}.menu-topline{left:40px;right:40px}.menu-aside{right:5%}.tree-inspector{width:225px;padding:20px 16px}.tree-head h2{font-size:13px}#topC{width:calc(100vw - 510px)}#topL{width:215px}.toast{font-size:10px;padding:8px 12px}}
@@ -349,8 +366,7 @@ body.conversing #hud{opacity:.3}body.conversing #touchControls,body.conversing #
 
 #weaponHUD{position:absolute;left:20px;bottom:25px;width:239px;padding:12px 14px 10px;background:linear-gradient(135deg,#1a2534eb,#0b121fef);border:1px solid #a5905c65;border-radius:1px 10px 1px 10px;box-shadow:inset 0 0 0 4px #b4965820,0 5px 20px #0005;pointer-events:auto}
 .weapon-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}#weaponStatus{font:8px system-ui;color:#bcb293;letter-spacing:.13em}#ammoCount{font:14px Georgia;color:#f1d9a3}#ammoRounds{display:flex;gap:4px;height:13px;align-items:flex-end}#ammoRounds i{height:10px;width:9px;background:#48536540;border:1px solid #83909b25;border-radius:50%}#ammoRounds i.loaded{background:radial-gradient(circle,#fff1b2,#d18a42 55%,#6b402e);border-color:#dbb57088;box-shadow:0 0 6px #e6c57a16}.weapon-reload-track{height:2px;background:#73839320;margin:8px 0 9px}#reloadProgress{height:2px;width:0;background:#eed59c}.weapon-actions{display:flex;justify-content:space-between;gap:10px}.weapon-actions button{font:8px system-ui;letter-spacing:.08em;background:transparent;border:0;padding:4px 0;color:#d7c39f;cursor:pointer}.weapon-actions button:disabled{opacity:.5;cursor:default}.weapon-actions button:focus-visible{outline:2px solid #d6bc80}.weapon-actions button kbd{font-size:8px;padding:1px 4px;margin-right:4px}#bladeReady{font:7px system-ui;color:#8fa6b5;letter-spacing:.11em}.blade-line{display:flex;align-items:center;gap:12px;margin-top:7px}.blade-track{height:2px;flex:1;background:#769db426}#bladeProgress{height:2px;background:#9fc5d1;width:100%}#weaponHUD.rekindling{border-color:#e5c37d99}#weaponHUD.rekindling #weaponStatus{color:#eed190}#botL{bottom:157px;max-width:260px}.audiorow{flex-wrap:wrap;max-width:360px}#quickControls{font-size:8px}
-.armory-heading{font:20px Georgia;color:#d9c5a0;margin:27px 0 14px}.armory-entry{padding:12px 14px;border:1px solid #8d9eae22;background:#0b132040;margin-bottom:7px;border-radius:2px}.armory-entry strong{display:block;font:12px system-ui;color:#7e91a5}.armory-entry small{display:block;font:10px/1.7 system-ui;color:#6f8297;margin-top:5px}.armory-entry.unlocked{border-color:#ac935c40;background:#a07b2e09}.armory-entry.unlocked strong{color:#e1c590}.armory-entry.unlocked small{color:#a4b3c1}.touch-extra{flex-wrap:wrap;max-width:150px}
-body.touch #weaponHUD{bottom:156px}body.touch #botL{bottom:282px}
+.armory-heading{font:20px Georgia;color:#d9c5a0;margin:27px 0 14px}.armory-entry{padding:12px 14px;border:1px solid #8d9eae22;background:#0b132040;margin-bottom:7px;border-radius:2px}.armory-entry strong{display:block;font:12px system-ui;color:#7e91a5}.armory-entry small{display:block;font:10px/1.7 system-ui;color:#6f8297;margin-top:5px}.armory-entry.unlocked{border-color:#ac935c40;background:#a07b2e09}.armory-entry.unlocked strong{color:#e1c590}.armory-entry.unlocked small{color:#a4b3c1}
 @media(max-width:700px){#weaponHUD{left:12px;bottom:60px;width:189px;padding:10px 12px 8px}#weaponStatus{font-size:7px}#ammoRounds{gap:3px}#ammoRounds i{width:7px}#botL{bottom:190px;max-width:190px}.weapon-actions{gap:5px}.weapon-actions button{font-size:7px}#bladeReady{font-size:6px}#botC{left:auto;right:20px;transform:none;bottom:69px}#prompt{position:fixed;bottom:215px;left:50%;transform:translateX(-50%);min-width:200px}.audiorow{max-width:330px;justify-content:center}.memories-panel{padding:22px}body.touch #botC{bottom:240px}}
 
 .chapter-plan{margin:16px 0 24px;border:1px solid #87a76b55;border-radius:3px 14px 3px 14px;background:#1c2b2266}.chapter-plan summary{padding:16px 18px;color:#d5dfba;font:14px Georgia;cursor:pointer}.chapter-plan summary span{float:right;font:9px system-ui;letter-spacing:.12em;color:#a9ad87}.chapter-plan>div{padding:0 18px 18px}.chapter-plan h3{font:18px Georgia;color:#c9d9b5;margin:20px 0 10px}.chapter-plan p{font:12px/1.9 system-ui;color:#b2c1ab}.chapter-plan table{width:100%;border-collapse:collapse;font:11px/1.6 system-ui;color:#b2c1ab}.chapter-plan th,.chapter-plan td{padding:10px 7px;border-bottom:1px solid #9cad8326;text-align:left;vertical-align:top}.chapter-plan th{color:#d4dec1;font-weight:500}.chapter-plan td:first-child{color:#c7b17d;white-space:nowrap}.dialogue-frame[data-speaker=matriarch]{--voice:#d9b0c2;border-color:#a0ad83;background:linear-gradient(125deg,#222c27fa,#101d1bfc 65%)}.dialogue-frame[data-speaker=matriarch] #speakerName{color:#d9b0c2}.dialogue-frame[data-speaker=matriarch]:before{border-color:#9bad7633}.dialogue-frame[data-speaker=matriarch]:after{background:linear-gradient(90deg,#c49aaa,#87a66a)}
@@ -389,7 +405,7 @@ body.touch #weaponHUD{bottom:156px}body.touch #botL{bottom:282px}
 </head>
 <body>
 
-<canvas id="cv" tabindex="0" aria-label="VoidFall dungeon. Move with WASD or arrows, J for Ember Bolt, K for Flare, R to Rekindle, Space to dash, E to interact, Escape to pause."></canvas>
+<canvas id="cv" tabindex="0" aria-label="VoidFall dungeon. On touchscreens, use the left stick to move, hold the right stick to aim and fire, and use the four ability buttons. With a keyboard, move with WASD or arrows, J for Ember Bolt, K for Flare, R to Rekindle, Space to dash, E to interact, Escape to pause."></canvas>
 <div id="vig"></div><div id="lowvig"></div>
 <div id="fade"></div>
 
@@ -422,7 +438,16 @@ body.touch #weaponHUD{bottom:156px}body.touch #botL{bottom:282px}
   <div id="fps"></div>
   <div id="quickControls">WASD move · J / click Ember Bolt · K / right-click Flare · R Rekindle · Space dash · E interact</div>
   <div class="hud-actions"><button class="btn" id="btnAssist" title="F: toggle aim assist"><span id="assistLabel">ASSIST OFF</span></button><button class="btn" id="btnPause">PAUSE <kbd>Esc</kbd></button></div>
-  <div id="touchControls"><div class="touch-pad"><button data-move="KeyW" aria-label="Move up">↑</button><button data-move="KeyA" aria-label="Move left">←</button><button data-move="KeyS" aria-label="Move down">↓</button><button data-move="KeyD" aria-label="Move right">→</button></div><div class="touch-extra"><button id="touchDash">DASH</button><button id="touchEnter">PORTAL</button><button id="touchMelee">FLARE</button><button id="touchReload">REKINDLE</button></div></div>
+  <div id="touchControls" aria-label="Touch controls">
+    <div class="touch-stick-wrap" id="moveStickWrap"><div class="touch-caption"><b>MOVE</b> DRAG</div><div class="touch-stick" id="moveStick" aria-label="Movement joystick"><i class="touch-stick-grid"></i><i class="touch-knob"></i></div></div>
+    <div class="touch-actions">
+      <button class="touch-action" id="touchMelee" aria-label="Release close-range Flare"><strong>✦</strong>FLARE</button>
+      <button class="touch-action" id="touchDash" aria-label="Dash"><strong>››</strong>DASH</button>
+      <button class="touch-action" id="touchReload" aria-label="Rekindle ember charges"><strong>↻</strong>REKINDLE</button>
+      <button class="touch-action interact" id="touchEnter" aria-label="Interact or enter portal"><strong>◇</strong>USE</button>
+    </div>
+    <div class="touch-stick-wrap" id="aimStickWrap"><div class="touch-caption"><b>BOLT</b> AIM + HOLD</div><div class="touch-stick" id="aimStick" aria-label="Aim and fire joystick"><i class="touch-fire-ring"></i><i class="touch-stick-grid"></i><i class="touch-knob"></i></div></div>
+  </div>
 </div>
 
 <!-- ================= MENU ================= -->
@@ -451,6 +476,7 @@ body.touch #weaponHUD{bottom:156px}body.touch #botL{bottom:282px}
       <div class="k"><kbd>E</kbd></div><div>Enter the portal to descend · restores 15% health</div>
       <div class="k"><kbd>ESC</kbd>/<kbd>P</kbd></div><div>Pause</div>
       <div class="k"><kbd>J</kbd></div><div>Cast Ember Bolts at the nearest enemy · Rekindles when empty</div><div class="k"><kbd>F</kbd></div><div>Toggle automatic aim + fire (helpful on a trackpad)</div><div class="k"><kbd>K</kbd> / right click</div><div>Flare — 2.25× Ember Bolt damage · usable while Rekindling</div><div class="k"><kbd>R</kbd></div><div>Rekindle six charges · empty wells Rekindle automatically</div><div class="k"><kbd>M</kbd></div><div>Toggle music</div>
+      <div class="k"><kbd>TOUCH</kbd></div><div>Left stick moves · hold the right stick to aim and fire · four buttons use Flare, Dash, Rekindle, and nearby objects</div>
     </div>
     <div class="how-tips">Walk up to a chest to open it. Cyan XP and violet essence are separate.<br>
       <b>Cyan shards</b> grant XP — level up and draft 1 of 3 blessings.<br>
@@ -532,7 +558,7 @@ body.touch #weaponHUD{bottom:156px}body.touch #botL{bottom:282px}
  <label class="settings-row"><span>Music<small>Procedural ambient soundtrack.</small></span><input id="setMusic" type="checkbox"></label>
  <label class="settings-row"><span>Sound effects<small>Combat, pickups, and menu sounds.</small></span><input id="setSfx" type="checkbox"></label>
  <label class="settings-row"><span>Reduced motion<small>Disable camera shake and menu animations.</small></span><input id="setMotion" type="checkbox"></label>
- <label class="settings-row"><span>Touch controls<small>Directional buttons, dash, and portal controls.</small></span><input id="setTouch" type="checkbox"></label>
+ <label class="settings-row"><span>Touch controls<small>Dual analog sticks with aim-to-fire and dedicated ability buttons. Enabled automatically on touchscreens.</small></span><input id="setTouch" type="checkbox"></label>
  <label class="settings-row"><span>Dialogue speed<small>Read at your own pace. Enter or Space continues.</small></span><select id="setTextSpeed"><option value="1">Normal</option><option value="2">Fast</option><option value="0">Instant</option></select></label>
  <label class="settings-row"><span>Dialogue sounds<small>Quiet tones while characters speak.</small></span><input id="setDialogueVoice" type="checkbox"></label>
  <label class="settings-row"><span>Effects<small>Use light effects on slower devices.</small></span><select id="setQuality"><option value="full">Full</option><option value="light">Light</option></select></label>
@@ -935,6 +961,7 @@ function musicLoop(){
 
 /* ---------------- INPUT ---------------- */
 const keys={}; const mouse={x:0,y:0,down:false};
+const touchInput={moveX:0,moveY:0,aimX:0,aimY:0,aimActive:false,fire:false,movePointer:null,aimPointer:null};
 let interactQueued=false, dashQueued=false;
 addEventListener('keydown', e=>{
   if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
@@ -2063,7 +2090,7 @@ function update(dt){
   if(combatTick(dt))return;
   run.t+=dt; G.t+=dt;
   if(G.victoryPending>0){G.victoryPending-=dt;if(G.victoryPending<=0){victory();return;}}
-  if(save.assist||keys.KeyJ){aimTarget=nearestTarget();}else{aimTarget=null;}
+  if(save.assist||keys.KeyJ||touchInput.fire){aimTarget=nearestTarget();}else{aimTarget=null;}
   if(xpComboT>0){ xpComboT-=dt; if(xpComboT<=0) xpCombo=0; }
   // ---- movement ----
   let mx=0,my=0;
@@ -2071,6 +2098,7 @@ function update(dt){
   if(keys.KeyS||keys.ArrowDown)my+=1;
   if(keys.KeyA||keys.ArrowLeft)mx-=1;
   if(keys.KeyD||keys.ArrowRight)mx+=1;
+  mx+=touchInput.moveX;my+=touchInput.moveY;
   if(mx||my){ const l=Math.hypot(mx,my); mx/=l; my/=l; }
   p.moving=!!(mx||my);
   // ---- dash ----
@@ -2107,7 +2135,7 @@ function update(dt){
   if(p.regen>0&&p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.regen*dt);
   p.face=aimAngle();
   // ---- firing ----
-  if((mouse.down || keys.KeyJ || (save.assist && aimTarget)) && p.shotT<=0) fireVolley();
+  if((mouse.down || keys.KeyJ || touchInput.fire || (save.assist && aimTarget)) && p.shotT<=0) fireVolley();
   // ---- orbitals ----
   if(p.orbN>0){
     p.orbA+=dt*2.7;
@@ -3040,7 +3068,8 @@ function offlineIcons(){
     const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',paths[el.dataset.lucide]||paths.sparkles);svg.appendChild(p);el.replaceWith(svg);
   });
 }
-function clearInput(){for(const k in keys)keys[k]=false;mouse.down=false;interactQueued=false;dashQueued=false;aimTarget=null;}
+function resetTouchInput(){touchInput.moveX=touchInput.moveY=touchInput.aimX=touchInput.aimY=0;touchInput.aimActive=touchInput.fire=false;touchInput.movePointer=touchInput.aimPointer=null;for(const id of ['moveStick','aimStick']){const el=T(id);if(!el)continue;el.classList.remove('active');const knob=el.querySelector('.touch-knob');if(knob)knob.style.transform='translate(0px,0px)';}}
+function clearInput(){for(const k in keys)keys[k]=false;mouse.down=false;interactQueued=false;dashQueued=false;aimTarget=null;resetTouchInput();}
 function anyBlockingOverlay(){return G.skillsOpen||['howto','settings','confirmRun'].some(id=>T(id).classList.contains('open'));}
 function nearestTarget(){
   if(!G.player)return null;let best=null,dist=600*600;
@@ -3049,7 +3078,9 @@ function nearestTarget(){
 }
 function aimAngle(){
   const p=G.player;
+  if(touchInput.aimActive&&Math.hypot(touchInput.aimX,touchInput.aimY)>.12)return Math.atan2(touchInput.aimY,touchInput.aimX);
   if((save.assist||keys.KeyJ)&&aimTarget&&!aimTarget.dead)return Math.atan2(aimTarget.y-p.y,aimTarget.x-p.x);
+  if(touchInput.fire&&save.assist&&aimTarget&&!aimTarget.dead)return Math.atan2(aimTarget.y-p.y,aimTarget.x-p.x);
   if(save.assist||keys.KeyJ)return p.face||0;
   return Math.atan2(mouse.y+G.cam.y-p.y,mouse.x+G.cam.x-p.x);
 }
@@ -3084,7 +3115,8 @@ function toggleAssist(){save.assist=save.assist?0:1;syncSettings();saveNow();if(
 function applyAudioSettings(){if(!AC)return;const t=AC.currentTime;musDry.gain.setTargetAtTime(save.music?.14:0,t,.08);musSend.gain.setTargetAtTime(save.music?.26:0,t,.08);if(droneG)droneG.gain.setTargetAtTime(save.music?.5:0,t,.08);}
 function syncSettings(){
   for(const [id,key] of [['setAssist','assist'],['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])T(id).checked=!!save[key];
-  T('setQuality').value=save.quality;document.body.classList.toggle('motion-low',!!save.motion);document.body.classList.toggle('touch',!!save.touch);
+  const touchDevice=(typeof navigator!=='undefined'&&navigator.maxTouchPoints>0)||(typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches);
+  T('setQuality').value=save.quality;document.body.classList.toggle('motion-low',!!save.motion);document.body.classList.toggle('touch',!!save.touch||touchDevice);
   T('assistLabel').textContent=save.assist?'ASSIST ON':'ASSIST OFF';T('btnAssist').setAttribute('aria-pressed',String(!!save.assist));
   T('btnMusic').classList.toggle('off',!save.music);T('btnSfx').classList.toggle('off',!save.sfx);
   T('btnMusic').setAttribute('aria-pressed',String(!!save.music));T('btnSfx').setAttribute('aria-pressed',String(!!save.sfx));
@@ -3169,6 +3201,31 @@ function resetEverything(){
   save=validateSave(DEF_SAVE());META=computeMeta();G.skillsOpen=false;
   backToMenu();syncSettings();applyAudioSettings();saveNow();refreshMenuStats();T('btnStart').focus({preventScroll:true});
 }
+
+function wireAnalogStick(id,kind){
+  const stick=T(id),knob=stick.querySelector('.touch-knob'),pointerKey=kind+'Pointer';
+  const release=e=>{
+    if(touchInput[pointerKey]!==null&&e&&e.pointerId!==touchInput[pointerKey])return;
+    touchInput[pointerKey]=null;touchInput[kind+'X']=0;touchInput[kind+'Y']=0;
+    if(kind==='aim'){touchInput.aimActive=false;touchInput.fire=false;}
+    stick.classList.remove('active');knob.style.transform='translate(0px,0px)';
+  };
+  const move=e=>{
+    if(touchInput[pointerKey]!==e.pointerId)return;
+    const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,max=r.width*.34;
+    let dx=e.clientX-cx,dy=e.clientY-cy,dist=Math.hypot(dx,dy);if(dist>max){dx*=max/dist;dy*=max/dist;dist=max;}
+    const raw=dist/max,mag=raw<.12?0:(raw-.12)/.88,nx=dist?dx/dist*mag:0,ny=dist?dy/dist*mag:0;
+    touchInput[kind+'X']=nx;touchInput[kind+'Y']=ny;
+    if(kind==='aim'){touchInput.aimActive=mag>0;touchInput.fire=mag>.24;}
+    knob.style.transform=`translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px)`;
+  };
+  on(stick,'pointerdown',e=>{if(G.state!=='playing'||anyBlockingOverlay())return;e.preventDefault();initAudio();touchInput[pointerKey]=e.pointerId;stick.setPointerCapture(e.pointerId);stick.classList.add('active');move(e);});
+  on(stick,'pointermove',move);for(const ev of ['pointerup','pointercancel','lostpointercapture'])on(stick,ev,release);
+}
+function wireTouchAction(id,fn){
+  const el=T(id);on(el,'pointerdown',e=>{e.preventDefault();el.classList.add('pressed');if(G.state==='playing'&&!anyBlockingOverlay()){initAudio();fn();}});
+  for(const ev of ['pointerup','pointercancel','lostpointercapture'])on(el,ev,()=>el.classList.remove('pressed'));
+}
 function wireRefinements(){
   syncSettings();syncSaveStatus();
   on(T('btnContinue'),'click',resumeRun);on(T('btnAssist'),'click',toggleAssist);on(T('btnPause'),'click',()=>pauseGame(true));
@@ -3176,15 +3233,15 @@ function wireRefinements(){
   on(T('btnSettings'),'click',openSettings);on(T('btnPauseSettings'),'click',openSettings);on(T('btnSettingsClose'),'click',()=>hide('settings'));
   on(T('btnResetEverything'),'click',()=>confirmAction('RESET EVERYTHING?','This erases all progress: the current run, essence, Skill Tree, ability blessings, records, memories, and settings. All dialogue will play again. This cannot be undone.','YES, RESET EVERYTHING',resetEverything));
   on(T('btnConfirmRun'),'click',()=>{hide('confirmRun');const fn=confirmCallback;confirmCallback=null;if(fn)fn();});on(T('btnCancelRun'),'click',()=>hide('confirmRun'));
-  for(const [id,key] of [['setAssist','assist'],['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])on(T(id),'change',()=>{initAudio();save[key]=T(id).checked?1:0;if(key==='touch'&&save.touch)save.assist=1;applyAudioSettings();syncSettings();saveNow();});
+  for(const [id,key] of [['setAssist','assist'],['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])on(T(id),'change',()=>{initAudio();save[key]=T(id).checked?1:0;applyAudioSettings();syncSettings();saveNow();});
   on(T('setQuality'),'change',()=>{save.quality=T('setQuality').value;saveNow();});
   on(T('btnExport'),'click',()=>{saveNow();const blob=new Blob([JSON.stringify(save)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='voidfall-save-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);});
   on(T('btnImport'),'click',()=>T('saveFile').click());
   on(T('saveFile'),'change',async()=>{const file=T('saveFile').files[0];if(!file)return;try{if(file.size>1500000)throw Error('File is too large');pendingImport=validateSave(JSON.parse(await file.text()));T('importSummary').textContent='Replace current progress with '+pendingImport.essence+' essence, '+Object.keys(pendingImport.nodes).length+' sigils, and best floor '+pendingImport.bestFloor+'? Export your current progress first if you want to keep it.';T('importReview').hidden=false;}catch(e){T('settingsSave').textContent='That save could not be read. Your current progress has not changed.';T('settingsSave').classList.add('warning');}T('saveFile').value='';});
   on(T('btnImportApply'),'click',()=>{if(!pendingImport)return;save=pendingImport;pendingImport=null;META=computeMeta();saveNow();refreshMenuStats();syncSettings();T('importReview').hidden=true;});
   on(T('btnImportCancel'),'click',()=>{pendingImport=null;T('importReview').hidden=true;});
-  document.querySelectorAll('[data-move]').forEach(el=>{on(el,'pointerdown',e=>{if(G.state!=='playing')return;e.preventDefault();initAudio();el.setPointerCapture(e.pointerId);keys[el.dataset.move]=true;});for(const event of ['pointerup','pointercancel','lostpointercapture'])on(el,event,()=>keys[el.dataset.move]=false);});
-  on(T('touchDash'),'pointerdown',e=>{e.preventDefault();if(G.state==='playing')dashQueued=true;});on(T('touchEnter'),'click',()=>{if(G.state==='playing')interactQueued=true;});
+  wireAnalogStick('moveStick','move');wireAnalogStick('aimStick','aim');
+  wireTouchAction('touchDash',()=>dashQueued=true);wireTouchAction('touchEnter',()=>interactQueued=true);
 }
 
 /* Menu-only ornaments. These are inline interface shapes, with no image assets. */
@@ -3277,7 +3334,7 @@ function finishDialogue(){
   T('conversation').hidden=true;document.body.classList.remove('conversing');clearInput();setState(d.from);applyAudioSettings();
   if(G.player)G.player.hitCd=Math.max(G.player.hitCd,.75);
   if(['wardenAfter','matriarchAfter'].includes(d.id)&&!d.replay&&G.run&&!G.dead){G.run[d.id==='wardenAfter'?'hollowClearShown':'gardenClearShown']=true;showChapterClear();}
-  else if(d.id==='arrival'&&!d.replay){announceHollowFloor();fieldNote('J for Ember Bolt · K for Flare · R to Rekindle · Space to dash',7);}
+  else if(d.id==='arrival'&&!d.replay){announceHollowFloor();fieldNote(document.body.classList.contains('touch')?'Left stick moves · Hold the right stick to aim and fire · Ability buttons sit between them':'J for Ember Bolt · K for Flare · R to Rekindle · Space to dash',7);}
   if(d.focus?.isConnected)d.focus.focus({preventScroll:true});else if(G.state==='playing')G.cv.focus({preventScroll:true});
   saveNow();if(d.replay)renderMemories();
 }
@@ -3803,6 +3860,8 @@ function syncWeaponHUD(){
   T('reloadProgress').style.width=(p.reloadT>0?(1-p.reloadT/p.reloadDuration)*100:0)+'%';T('weaponHUD').classList.toggle('rekindling',p.reloadT>0);
   T('bladeReady').textContent=p.meleeCdT>0?'FLARE RECOVERING':'FLARE READY';T('bladeProgress').style.width=(1-clamp(p.meleeCdT/MELEE.cooldown,0,1))*100+'%';
   T('btnReload').disabled=p.reloadT>0||p.ammo>=p.magSize;T('btnMelee').disabled=p.meleeCdT>0;
+  const touchStates=[['touchMelee',p.meleeCdT>0],['touchDash',p.dashCdT>0],['touchReload',p.reloadT>0||p.ammo>=p.magSize]];
+  for(const [id,cooling] of touchStates){const el=T(id);el.classList.toggle('cooling',cooling);el.setAttribute('aria-disabled',String(cooling));}
 }
 function drawFlareArc(ctx,x,y,a,r,t,half=.8,color='#fff0cc'){
   if(t<=0||t>=1)return;const end=-half+2*half*t,start=Math.max(-half,end-.82),fade=Math.sin(Math.PI*t);
