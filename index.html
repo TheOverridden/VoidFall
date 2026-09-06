@@ -940,8 +940,8 @@ function musicLoop(){
   setInterval(()=>{
     if(!AC) return;
     const want = save.music ? (0.32+musicInt*0.34) : 0;
-    musDry.gain.setTargetAtTime(want*.34, AC.currentTime, 1.2);
-    musSend.gain.setTargetAtTime(want*.6, AC.currentTime, 1.2);
+    musDry.gain.setTargetAtTime(want*.62, AC.currentTime, 1.2);
+    musSend.gain.setTargetAtTime(want*.9, AC.currentTime, 1.2);
     if(droneG) droneG.gain.setTargetAtTime(save.music?(.5+musicInt*.5):0, AC.currentTime, 2.0);
     if(musLP) musLP.frequency.setTargetAtTime(760+musicInt*1500, AC.currentTime, 1.5);
     if(!save.music||document.hidden||AC.state!=='running'||G.state==='ending') return;
@@ -2145,13 +2145,13 @@ function update(dt){
   }
   if(p.dashT>0){
     p.dashT-=dt;
-    moveEnt(w,p,p.dashDx*560*(META.dashSpeed||1)*dt,p.dashDy*560*(META.dashSpeed||1)*dt);
+    moveEnt(w,p,p.dashDx*560*(META.dashSpeed||1)*(p.dashDistance||1)*dt,p.dashDy*560*(META.dashSpeed||1)*(p.dashDistance||1)*dt);
     part(p.x,p.y,rand(-20,20),rand(-20,20),.3,4,'rgba(255,200,110,.7)',true);
     p.ghostT-=dt;
     if(p.ghostT<=0){ p.ghostT=.022;
       p.ghosts.push({x:p.x,y:p.y+2,rot:Math.atan2(p.dashDy,p.dashDx)+Math.PI/2,life:1}); }
   } else {
-    const sp=p.speed*(p.meleeWindT>0?.65:p.meleeHitT>0?.8:1);
+    const sp=p.speed*(p.pathSpeed||1)*(p.meleeWindT>0?.65:p.meleeHitT>0?.8:1);
     moveEnt(w,p,mx*sp*dt+p.kbx*dt,my*sp*dt+p.kby*dt);
   }
   p.kbx*=Math.pow(.0005,dt); p.kby*=Math.pow(.0005,dt);
@@ -2168,7 +2168,7 @@ function update(dt){
   if((mouse.down || keys.KeyJ || touchInput.fire || (save.assist && aimTarget)) && p.shotT<=0) fireVolley();
   // ---- orbitals ----
   if(p.orbN>0){
-    p.orbA+=dt*2.7;
+    p.orbA+=dt*2.7*(p.orbitRate||1);
     for(let i=0;i<p.orbN;i++){
       const a=p.orbA+i/p.orbN*TAU;
       const ox=p.x+Math.cos(a)*64, oy=p.y+Math.sin(a)*64;
@@ -2176,7 +2176,7 @@ function update(dt){
         if(e.dead||e.orbT>0) continue;
         if(d2(ox,oy,e.x,e.y)<(e.r+11)*(e.r+11)){
           e.orbT=.35;
-          const crit=chance(p.critC); damageEnemy(e,p.dmg*.45*(crit?2:1),Math.atan2(e.y-p.y,e.x-p.x),crit,1,'orbital');
+          const crit=chance(p.critC); damageEnemy(e,p.dmg*.45*(p.orbitPower||1)*(crit?2:1),Math.atan2(e.y-p.y,e.x-p.x),crit,1,'orbital');
           burst(ox,oy,3,'#ffd88a',120,.25,2,true);
         }
       }
@@ -2357,9 +2357,9 @@ function updateBullets(dt){
         if(!b.hits)b.hits=new Set();b.hits.add(e);
         if(b.pierce>0)b.pierce--;
         else if(b.ric>0){
-          b.ric--;let best=null,dist=270**2;
+          b.ric--;let best=null,dist=(b.ricRange||270)**2;
           for(const other of G.enemies){const dd=d2(b.x,b.y,other.x,other.y);if(!other.dead&&!b.hits.has(other)&&dd<dist&&los(w,b.x,b.y,other.x,other.y)){best=other;dist=dd;}}
-          if(best){const a=Math.atan2(best.y-b.y,best.x-b.x),spd=Math.hypot(b.vx,b.vy);b.vx=Math.cos(a)*spd;b.vy=Math.sin(a)*spd;b.dmg*=.7;b.life=Math.max(b.life,.5);}else remove=true;
+          if(best){const a=Math.atan2(best.y-b.y,best.x-b.x),spd=Math.hypot(b.vx,b.vy);b.vx=Math.cos(a)*spd;b.vy=Math.sin(a)*spd;b.dmg*=b.ricPower||.7;b.life=Math.max(b.life,.5);}else remove=true;
         }else remove=true;
         break;
       }
@@ -3049,7 +3049,7 @@ function init(){
   lightCv=document.createElement('canvas'); lctx=lightCv.getContext('2d');
   bakeAllGlows(); bakeAll(); bakePerfectEmber(); bakeTiles(); bakeHollowSprites();bakeGardenSprites();
   resize(); addEventListener('resize',resize);
-  wireButtons(); wireTree();wireRefinements();decorateMenus();wireHollow();wireCombat();wireLate();wireMastery();wireDepth();wireDepth();wireDepth();wireDepth();wireDepth();wireDepth();wireDepth();wireDepth();
+  wireButtons(); wireTree();wireRefinements();decorateMenus();wireHollow();wireCombat();wireLate();wireMastery();wireDepth();
   refreshIcons(); refreshMenuStats();
   setState('menu');
   G.tAll=0;
@@ -4604,7 +4604,7 @@ updateBullets=function(dt){
         if(b.fork){forkBolts(b,e,1+b.fork);b.fork=0;}
         if(crit&&b.blast){for(const other of G.enemies)if(other!==e&&!other.dead&&d2(other.x,other.y,e.x,e.y)<(52+18*b.blast)**2)damageEnemy(other,b.dmg*.22*b.blast,Math.atan2(other.y-e.y,other.x-e.x),false,.4,'blast');}
         if(b.pierce>0)b.pierce--;
-        else if(b.ric>0){b.ric--;let best=null,dist=270**2;for(const other of G.enemies){const dd=d2(b.x,b.y,other.x,other.y);if(!other.dead&&!b.hits.has(other)&&dd<dist&&los(w,b.x,b.y,other.x,other.y)){best=other;dist=dd;}}if(best){const a=Math.atan2(best.y-b.y,best.x-b.x),speed=Math.hypot(b.vx,b.vy);b.vx=Math.cos(a)*speed;b.vy=Math.sin(a)*speed;b.dmg*=.7;b.life=Math.max(b.life,.5);}else remove=true;}
+        else if(b.ric>0){b.ric--;let best=null,dist=(b.ricRange||270)**2;for(const other of G.enemies){const dd=d2(b.x,b.y,other.x,other.y);if(!other.dead&&!b.hits.has(other)&&dd<dist&&los(w,b.x,b.y,other.x,other.y)){best=other;dist=dd;}}if(best){const a=Math.atan2(best.y-b.y,best.x-b.x),speed=Math.hypot(b.vx,b.vy);b.vx=Math.cos(a)*speed;b.vy=Math.sin(a)*speed;b.dmg*=b.ricPower||.7;b.life=Math.max(b.life,.5);}else remove=true;}
         else remove=true;break;
       }
     }
@@ -4816,7 +4816,7 @@ function setupLateFloor(f){
   G.enemies=[];G.bullets=[];G.ebul=[];G.picks=[];G.boss=null;G.bossActive=false;T('bossbar').classList.remove('on');
   const start=w.rooms[0],exit=w.exit;G.player.x=start.cx*TILE+18;G.player.y=start.cy*TILE+18;G.player.hitCd=1;G.cam.x=G.player.x-G.w/2;G.cam.y=G.player.y-G.h/2;G.portal={x:exit.cx*TILE+18,y:exit.cy*TILE+18,r:26,active:!bossFloorAt(f),t:0};
   for(let i=0;i<w.rooms.length;i++){const room=w.rooms[i];w.lateDecor.push({type:region.key,x:room.cx*TILE+18,y:room.cy*TILE+18,w:(room.w-2)*TILE,h:(room.h-2)*TILE,seed:i});if(i>1&&room!==exit&&i%4===1)w.lateHazards.push(lateHazardFor(region,room,i));}
-  const traceRoom=w.rooms.filter(r=>r!==start&&r!==exit)[irand(0,Math.max(0,w.rooms.length-3))]||w.rooms[1],tracePos=latePlace(w,traceRoom,20);if(tracePos)w.lateFixtures.push({kind:'trace',id:'trace'+f,...tracePos});
+  const traceRooms=w.rooms.filter(r=>r!==start&&r!==exit),traceRoom=traceRooms[irand(0,traceRooms.length-1)]||w.rooms[1]||start,tracePos=latePlace(w,traceRoom,20);if(tracePos)w.lateFixtures.push({kind:'trace',id:'trace'+f,...tracePos});
   const roster=LATE_ROSTERS[region.key],rooms=w.rooms.filter(r=>r!==start&&r!==exit),within=f-region.from,target=bossFloorAt(f)?Math.min(15,9+region.stage):Math.min(30,12+region.stage+within*2),eliteChance=.08+(region.stage-5)*.035;let spawned=0;
   for(let pass=0;pass<3&&spawned<target;pass++)for(let ri=0;ri<rooms.length&&spawned<target;ri++){if(pass>0&&ri<2)continue;const room=rooms[ri],type=roster[(ri+pass+within)%roster.length],pos=latePlace(w,room,ETYPES[type].r);if(pos){spawnEnemy(type,pos.x,pos.y,chance(eliteChance));spawned++;}}
   if(bossFloorAt(f))spawnLateBoss(region);G.player.ammo=Math.min(G.player.ammo??G.player.magSize,G.player.magSize);G.run.lateClearShown=G.run.lateClearShown===f?0:G.run.lateClearShown;
@@ -5065,7 +5065,7 @@ function drawLateHazard(ctx,h){
 function drawLateWorld(ctx){
   const w=G.world;if(w?.region!=='late')return;for(const o of w.lateDecor||[])if(o.x>G.cam.x-o.w&&o.x<G.cam.x+G.w+o.w&&o.y>G.cam.y-o.h&&o.y<G.cam.y+G.h+o.h)drawLateDecor(ctx,o);for(const h of w.lateHazards||[])drawLateHazard(ctx,h);
   if(w.sealed)for(const p of w.lateDoors||[]){const x=p.x*TILE,y=p.y*TILE,c=lateDecorColor(w.lateKey);ctx.fillStyle='#0b0d14';ctx.fillRect(x,y,TILE,TILE);ctx.fillStyle=c;for(let i=0;i<4;i++)ctx.fillRect(x+4+i*9,y+3,3,TILE-6);}
-  for(const o of w.lateFixtures||[]){const seen=!!storyData().seen[o.id],near=d2(o.x,o.y,G.player.x,G.player.y)<82**2,c=TRACE_RECORDS[o.id]?.color||'#b39ad4';glowImg('violet',o.x,o.y-10,seen?24:43,seen?.12:.3);ctx.save();ctx.translate(o.x,o.y-16+Math.sin((save.motion?0:G.tAll)*1.5)*3);ctx.rotate(Math.PI/4);ctx.strokeStyle=seen?'#756f80':c;ctx.lineWidth=2;ctx.strokeRect(-9,-9,18,18);ctx.fillStyle=c+'45';ctx.fillRect(-5,-5,10,10);ctx.restore();ctx.fillStyle='#4b5563';ctx.fillRect(o.x-15,o.y+2,30,7);if(near){ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillStyle='#e4dcc8';ctx.fillText('E · '+(seen?'INSPECT':'RECOVER TRACE'),o.x,o.y+39);}}
+  for(const o of w.lateFixtures||[]){if(o.kind!=='trace')continue;const seen=!!storyData().seen[o.id],near=d2(o.x,o.y,G.player.x,G.player.y)<82**2,c=TRACE_RECORDS[o.id]?.color||'#b39ad4';glowImg('violet',o.x,o.y-10,seen?24:43,seen?.12:.3);ctx.save();ctx.translate(o.x,o.y-16+Math.sin((save.motion?0:G.tAll)*1.5)*3);ctx.rotate(Math.PI/4);ctx.strokeStyle=seen?'#756f80':c;ctx.lineWidth=2;ctx.strokeRect(-9,-9,18,18);ctx.fillStyle=c+'45';ctx.fillRect(-5,-5,10,10);ctx.restore();ctx.fillStyle='#4b5563';ctx.fillRect(o.x-15,o.y+2,30,7);if(near){ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillStyle='#e4dcc8';ctx.fillText('E · '+(seen?'INSPECT':'RECOVER TRACE'),o.x,o.y+39);}}
 }
 
 function drawLateBody(ctx,e){
@@ -5162,7 +5162,7 @@ const beforeLateValidateCheckpoint=validateCheckpoint;
 validateCheckpoint=function(r){
   beforeLateValidateCheckpoint(r);if(r.world?.region!=='late')return r;const fail=()=>{throw Error('Invalid late-stage data');},finite=(n,a=-1e6,b=1e9)=>typeof n==='number'&&Number.isFinite(n)&&n>=a&&n<=b,w=r.world;
   if(!lateRegion(r.floor)||w.lateKey!==lateRegion(r.floor).key)fail();for(const k of ['lateDecor','lateHazards','lateFixtures','lateDoors'])if(!Array.isArray(w[k])||w[k].length>300)fail();
-  for(const o of [...w.lateDecor,...w.lateHazards,...w.lateFixtures])if(!finite(o.x,0,w.W*TILE)||!finite(o.y,0,w.H*TILE))fail();for(const o of w.lateFixtures)if(o.kind!=='trace'||!TRACE_RECORDS[o.id])fail();for(const e of r.enemies)if(e.ai==='lateBoss'&&(!e.lateBoss||!e.bs||!['wait','windup','recover','shift','dash','dive','ram','barrier','cool','slam','submerge'].includes(e.bs.mode)||!finite(e.bs.t)||!finite(e.bs.a)))fail();return r;
+  for(const o of [...w.lateDecor,...w.lateHazards,...w.lateFixtures])if(!finite(o.x,0,w.W*TILE)||!finite(o.y,0,w.H*TILE))fail();for(const o of w.lateFixtures)if(o.kind!=='brazier'&&(o.kind!=='trace'||!TRACE_RECORDS[o.id]))fail();for(const e of r.enemies)if(e.ai==='lateBoss'&&(!e.lateBoss||!e.bs||!['wait','windup','recover','shift','dash','dive','ram','barrier','cool','slam','submerge'].includes(e.bs.mode)||!finite(e.bs.t)||!finite(e.bs.a)))fail();return r;
 };
 const beforeLateValidateSave=validateSave;
 validateSave=function(raw){const clean=beforeLateValidateSave(raw);if(raw.story?.seen)for(const id of Object.keys(TRACE_RECORDS))if(raw.story.seen[id]===true)clean.story.seen[id]=true;return clean;};
@@ -5935,6 +5935,11 @@ function wireMastery(){refreshTreeEss();}
 
 
 
+
+
+
+
+
 /* THE LAST LIGHT: authored encounters, creature silhouettes, and a finite campaign. */
 const DEPTH_REVISION=9;
 const ENDGAME_HP={bellkeeper:5100,colossus:8200,astronomer:11200,scribe:14500,regents:8800,seraph:19700,tyrant:25000,keeper:32000};
@@ -6217,6 +6222,151 @@ drawEnding=function(){cinematicBase();const cv=T('endingCanvas'),x=cv.getContext
  x.restore();};
 const fracturedArena=drawLateWorld;
 drawLateWorld=function(ctx){fracturedArena(ctx);const b=G.boss;if(!b?.introduced||b.bossKey!=='keeper'||!(b.bs.phase>0))return;const a=arenaBounds(),t=save.motion?0:G.tAll;ctx.save();ctx.lineWidth=2;ctx.strokeStyle=b.bs.phase===2?'#ffd388aa':'#a78c7477';for(let i=0;i<12;i++){const angle=i*TAU/12,x=a.cx+Math.cos(angle)*(a.right-a.left)*.42,y=a.cy+Math.sin(angle)*(a.bottom-a.top)*.42;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(angle+.2)*17,y+Math.sin(angle+.2)*17);ctx.lineTo(x+Math.cos(angle)*35,y+Math.sin(angle)*35);ctx.stroke();ctx.fillStyle=i%2?'#d4ad7166':'#85717a88';ctx.fillRect(x+Math.cos(t*.25+i)*5,y+Math.sin(t*.4+i)*4,5,3);}ctx.restore();};
+
+/* ======================================================================
+   THE LONG DESCENT · expanded blessing library, score, and Resting Flames
+   ====================================================================== */
+const LONG_DESCENT_BLESSINGS=[
+ /* Common: dependable pieces that keep early drafts useful. */
+ {id:'coalHeart',r:0,max:3,w:7,minFloor:2,icon:'heart',name:'Coal Heart',ds:'Heart drops restore 25% more health per rank'},
+ {id:'longFuse',r:0,max:3,w:8,minFloor:3,icon:'arrow-up-right',name:'Long Fuse',ds:'+20% Ember Bolt range'},
+ {id:'quickStep',r:0,max:3,w:8,minFloor:4,icon:'feather',name:'Lightfoot',ds:'+10% dash distance'},
+ {id:'ironAsh',r:0,max:3,w:7,minFloor:5,icon:'shield',name:'Iron Ash',ds:'Take 4% less damage'},
+ {id:'firstSpark',r:0,max:3,w:7,minFloor:6,icon:'sun',name:'First Spark',ds:'The first Bolt after Rekindling deals +45% damage'},
+ {id:'flarePractice',r:0,max:3,w:8,minFloor:7,icon:'flame',name:'Practiced Flare',ds:'Flare recovers 9% faster'},
+ {id:'emberReach',r:0,max:3,w:7,minFloor:8,icon:'circle',name:'Heavy Sparks',ds:'Ember Bolts grow larger and easier to land'},
+ {id:'lowGlow',r:0,max:3,w:6,minFloor:9,icon:'activity',name:'Low Glow',ds:'Regenerate faster while below 40% health'},
+ {id:'pathfinder',r:0,max:3,w:7,minFloor:10,icon:'compass',name:'Pathfinder',ds:'Move faster for the first 10 seconds of each floor'},
+ {id:'clearPath',r:0,max:3,w:7,minFloor:11,icon:'wind',name:'Clear the Way',ds:'Flare can strike one additional enemy'},
+ {id:'patientAim',r:0,max:3,w:6,minFloor:12,icon:'crosshair',name:'Patient Aim',ds:'Bolts gain damage while you have not cast recently'},
+ {id:'warmPocket',r:0,max:3,w:6,minFloor:13,icon:'gem',name:'Warm Pocket',ds:'Essence pickups have a chance to be worth one more'},
+
+ /* Uncommon: mechanics that begin to define a build. */
+ {id:'seeking',r:1,max:2,w:6,minFloor:9,icon:'navigation',name:'Seeking Embers',ds:'Bolts gently curve toward nearby enemies'},
+ {id:'cauterize',r:1,max:2,w:5,minFloor:11,icon:'flame',name:'Cauterize',ds:'Burning enemies deal 8% less contact damage'},
+ {id:'dashBurst',r:1,max:2,w:5,minFloor:12,icon:'wind',name:'Flash Step',ds:'Ending a dash releases a small damaging pulse'},
+ {id:'critMend',r:1,max:2,w:4,minFloor:14,icon:'heart-pulse',name:'Merciful Spark',ds:'Every eighth critical hit restores health'},
+ {id:'flareGuard',r:1,max:2,w:5,minFloor:15,icon:'shield',name:'Flare Ward',ds:'Casting Flare grants a brief ward'},
+ {id:'refund',r:1,max:2,w:5,minFloor:16,icon:'rotate-ccw',name:'Returning Heat',ds:'Critical Bolts can refund their charge'},
+ {id:'orbitSpeed',r:1,max:2,w:5,minFloor:17,icon:'orbit',name:'Swift Orbit',ds:'Cinders orbit faster and hit harder'},
+ {id:'kindleMark',r:1,max:2,w:5,minFloor:18,icon:'target',name:'Kindle Mark',ds:'Repeated hits build damage against one target'},
+ {id:'emberMine',r:1,max:2,w:4,minFloor:19,icon:'sparkles',name:'Dying Spark',ds:'Expired Bolts burst around themselves'},
+ {id:'essPulse',r:1,max:2,w:4,minFloor:20,icon:'gem',name:'Resonant Shard',ds:'Every eighth essence pickup releases a pulse'},
+ {id:'bossWard',r:1,max:2,w:4,minFloor:21,icon:'shield-check',name:'Guardian Ward',ds:'Guardian attacks deal 7% less damage'},
+ {id:'closeQuarters',r:1,max:2,w:5,minFloor:22,icon:'focus',name:'Nearlight',ds:'Bolts deal +18% damage at close range'},
+
+ /* Epic: strong engines with visible, active effects. */
+ {id:'comet',r:2,max:2,w:4,minFloor:16,icon:'star',name:'Comet Ember',ds:'Every ninth cast launches a large piercing comet'},
+ {id:'phoenixWake',r:2,max:2,w:3,minFloor:19,icon:'flame',name:'Phoenix Wake',ds:'Taking damage leaves a burning ring behind'},
+ {id:'gravityFlare',r:2,max:2,w:3,minFloor:21,icon:'circle-dot',name:'Gravity Flare',ds:'Flare pulls nearby enemies toward its center'},
+ {id:'doubleCast',r:2,max:2,w:3,minFloor:23,icon:'copy-plus',name:'Echo Cast',ds:'Every fifth cast repeats itself without using a charge'},
+ {id:'echoFlare',r:2,max:2,w:3,minFloor:25,icon:'waves',name:'Returning Flare',ds:'Flare repeats from your previous position'},
+ {id:'shockChain',r:2,max:2,w:3,minFloor:27,icon:'zap',name:'Storm Thread',ds:'Critical hits arc damage to nearby enemies'},
+ {id:'breaker',r:2,max:2,w:3,minFloor:29,icon:'hammer',name:'Lockbreaker',ds:'Deal +45% damage to guardian mechanisms'},
+ {id:'berserk',r:2,max:2,w:3,minFloor:31,icon:'gauge',name:'Fever Flame',ds:'Cast faster as health falls'},
+ {id:'overheal',r:2,max:2,w:3,minFloor:33,icon:'shield-plus',name:'Overflowing Light',ds:'Excess healing becomes a temporary ward'},
+ {id:'dashReset',r:2,max:1,w:3,minFloor:35,icon:'skull',name:'Ashen Pursuit',ds:'Elite kills instantly restore Dash'},
+ {id:'prismBolt',r:2,max:2,w:3,minFloor:37,icon:'triangle',name:'Prism Bolt',ds:'Ricochets retain more damage and seek farther'},
+ {id:'sunspot',r:2,max:2,w:3,minFloor:39,icon:'sun',name:'Sunspot',ds:'Cinders periodically erupt around you'},
+ {id:'timePocket',r:2,max:2,w:3,minFloor:41,icon:'hourglass',name:'Still Time',ds:'Standing still slows nearby enemy projectiles'},
+ {id:'heartfire',r:2,max:2,w:3,minFloor:43,icon:'heart',name:'Heartfire',ds:'Healing briefly raises damage and casting speed'},
+
+ /* Mythic: rare build-changing rules, introduced across the full descent. */
+ {id:'supernova',r:3,max:1,w:1,minFloor:22,icon:'sun',name:'Supernova',ds:'Every twentieth critical hit detonates a vast nova'},
+ {id:'blackHole',r:3,max:1,w:1,minFloor:28,icon:'circle-dot',name:'Black Star',ds:'Every twelfth cast leaves a damaging gravity well'},
+ {id:'sevenfold',r:3,max:1,w:1,minFloor:32,icon:'asterisk',name:'Sevenfold Flame',ds:'Every seventh cast becomes a seven-Bolt fan'},
+ {id:'mirrorSoul',r:3,max:1,w:1,minFloor:36,icon:'shield',name:'Mirror Soul',ds:'Flare destroys nearby hostile projectiles and returns their light'},
+ {id:'starfall',r:3,max:1,w:1,minFloor:40,icon:'sparkles',name:'Starfall',ds:'Elite deaths call down three delayed star strikes'},
+ {id:'radiantDebt',r:3,max:1,w:1,minFloor:44,icon:'flame',name:'Radiant Debt',ds:'+55% damage, but enemy hits deal 15% more damage'},
+ {id:'dawnward',r:3,max:1,w:1,minFloor:48,icon:'sunrise',name:'Dawnward',ds:'Once each floor, survive a fatal hit and become invulnerable'},
+ {id:'worldfire',r:3,max:1,w:1,minFloor:52,icon:'flame-kindling',name:'Worldfire',ds:'Burning enemies explode and spread fire when defeated'},
+ {id:'voidOrbit',r:3,max:1,w:1,minFloor:60,icon:'orbit',name:'Void Orbit',ds:'Gain a dark cinder that intercepts enemy shots'},
+ {id:'endless',r:3,max:1,w:1,minFloor:70,icon:'infinity',name:'The Endless Ember',ds:'Every 30 seconds, permanently gain 2% damage this run'}
+];
+POOL.push(...LONG_DESCENT_BLESSINGS);
+RARITY[2].n='EPIC';
+
+/* A draft is assembled from blessings available at this depth. Later cards
+   remain genuinely new instead of appearing and being exhausted early. */
+buildCards=function(){
+ const u=G.run.up,eligible=o=>(u[o.id]||0)<o.max&&(!o.unlock||armoryData()[o.unlock])&&G.floor>=(o.minFloor||1);
+ let pool=POOL.filter(eligible);if(!pool.length)pool=[{id:'hp',r:0,max:99,w:1,icon:'heart',name:'Emberglow',ds:'Restore 25 health'}];
+ const picks=(G.restoreCardIds||[]).map(id=>POOL.find(o=>o.id===id)).filter(Boolean);G.restoreCardIds=null;
+ while(picks.length<3&&pool.length){const rarity=rollRarity(pool),tier=pool.filter(o=>o.r===rarity);let total=tier.reduce((n,o)=>n+o.w,0),roll=Math.random()*total,sel=tier[0];for(const o of tier){roll-=o.w;if(roll<=0){sel=o;break;}}picks.push(sel);pool=pool.filter(o=>o!==sel);}
+ const wrap=T('cards');wrap.replaceChildren();for(let i=0;i<picks.length;i++){const o=picks[i],rank=u[o.id]||0,el=document.createElement('button');el.className='card';el.dataset.r=o.r;el.type='button';const pips=o.max<=8?'<div class="pips">'+Array.from({length:o.max},(_,k)=>`<em class="${k<rank?'on':''}"></em>`).join('')+'</div>':'';el.innerHTML=`<span class="key">${i+1}</span><div class="rar">${RARITY[o.r].n}</div><div class="ic"><i data-lucide="${o.icon}"></i></div><div class="nm cinzel">${o.name}</div><div class="ds">${o.ds}</div>${pips}<div class="card-rank">${rank?'RANK '+(rank+1):'NEW BLESSING'}</div>`;el._up=o;on(el,'click',()=>chooseCard(i));wrap.appendChild(el);}G.cardPool=picks;refreshIcons();
+};
+rarityOdds=function(){const depth=clamp((G.floor-1)/79,0,1),treasure=G.opts.freeChoice?1:0,luck=META.rarity||0;let o=[.55-depth*.27,.29-depth*.02,.13+depth*.15,.03+depth*.14];o[0]-=treasure*.10;o[2]+=treasure*.055;o[3]+=treasure*.045;const shift=Math.min(Math.max(0,o[0]-.18),luck);o[0]-=shift;o[1]+=shift*.25;o[2]+=shift*.48;o[3]+=shift*.27;const total=o.reduce((a,b)=>a+b,0);return o.map(v=>v/total);};
+
+const longRecalc=recalc;
+recalc=function(){longRecalc();if(!G.player||!G.run)return;const p=G.player,u=G.run.up,g=id=>u[id]||0;p.dmg*=1+.55*g('radiantDebt');p.dmg*=Math.pow(1.02,G.run.endlessStacks||0);MELEE.cooldown*=Math.pow(.91,g('flarePractice'));MELEE.cleave=[1,.65,.45,...Array(g('clearPath')).fill(.35)];p.dashDistance=1+.10*g('quickStep');p.cardArmor=.04*g('ironAsh');p.bulletLife=1+.20*g('longFuse');p.bulletSize=1+g('emberReach');p.orbitPower=1+.25*g('orbitSpeed');p.orbitRate=1+.18*g('orbitSpeed');};
+const longFire=fireVolley;
+fireVolley=function(){const p=G.player,u=G.run.up,start=G.bullets.length,beforeAmmo=p.ammo;longFire();if(G.bullets.length===start)return;const created=G.bullets.slice(start);p.cardCasts=(p.cardCasts||0)+1;const patient=Math.max(0,Math.min(.45,(G.t-(p.lastCardCast||-9))*.06))*(u.patientAim||0);p.lastCardCast=G.t;for(const b of created){b.life*=p.bulletLife||1;b.r+=(p.bulletSize||1)-1;b.dmg*=1+patient;if(u.seeking)b.seeking=.055*u.seeking;if(u.closeQuarters)b.closeQuarters=u.closeQuarters;if(u.emberMine)b.emberMine=u.emberMine;if(u.prismBolt){b.ricRange=330+70*u.prismBolt;b.ricPower=.82+.07*u.prismBolt;}}
+ if(u.firstSpark&&p.ammo===p.magSize-1)for(const b of created)b.dmg*=1+.45*u.firstSpark;
+ if(u.comet&&p.cardCasts%9===0){const b=created[0];G.bullets.push({...b,r:10+2*u.comet,dmg:b.dmg*(1.4+.5*u.comet),pierce:7,life:1.8,comet:true,hits:null});sfx('comet');}
+ if(u.doubleCast&&p.cardCasts%5===0)for(const b of created)G.bullets.push({...b,x:p.x,y:p.y,dmg:b.dmg*(.62+.18*u.doubleCast),hits:null,whiteStar:false});
+ if(u.sevenfold&&p.cardCasts%7===0){const a=aimAngle();for(let i=-3;i<=3;i++)G.bullets.push({x:p.x,y:p.y,vx:Math.cos(a+i*.12)*BASE.bulletSpd,vy:Math.sin(a+i*.12)*BASE.bulletSpd,r:5,dmg:p.dmg*.58,pierce:1,ric:0,life:1.1,hits:null,late:true});sfx('mythic');}
+ if(u.blackHole&&p.cardCasts%12===0){G.run.cardFields=G.run.cardFields||[];G.run.cardFields.push({x:p.x+Math.cos(aimAngle())*150,y:p.y+Math.sin(aimAngle())*150,t:4,tick:0,kind:'blackHole'});sfx('mythic');}
+ if(u.refund&&beforeAmmo>p.ammo&&chance(.10*u.refund+p.critC*.2))p.ammo=Math.min(p.magSize,p.ammo+1);
+};
+const longStrike=strikeMelee;
+strikeMelee=function(){const p=G.player,u=G.run.up,oldX=p.lastFlareX??p.x,oldY=p.lastFlareY??p.y,a=p.meleeAngle;longStrike();p.lastFlareX=p.x;p.lastFlareY=p.y;if(u.flareGuard)p.guardT=Math.max(p.guardT||0,.32+.14*u.flareGuard);if(u.gravityFlare)for(const e of G.enemies){if(e.dead||e.isBoss)continue;const d=Math.max(1,Math.hypot(e.x-p.x,e.y-p.y));if(d<190){e.kbx+=(p.x-e.x)/d*130*u.gravityFlare;e.kby+=(p.y-e.y)/d*130*u.gravityFlare;}}if(u.echoFlare){G.run.cardFlares=G.run.cardFlares||[];G.run.cardFlares.push({x:oldX,y:oldY,a,t:.32,rank:u.echoFlare});}if(u.mirrorSoul){let returned=0;G.ebul=G.ebul.filter(b=>{if(d2(b.x,b.y,p.x,p.y)<145**2){returned++;return false;}return true;});if(returned)nova(p.x,p.y,120,p.dmg*Math.min(3,returned*.28));}sfx('flare');};
+const longDamage=damageEnemy;
+damageEnemy=function(e,dmg,ang,crit,kb,kind='shot'){if(!e||e.dead)return;const u=G.run?.up||{},p=G.player;if(e.mechanism&&u.breaker)dmg*=1+.45*u.breaker;if(kind==='shot'&&u.closeQuarters&&d2(e.x,e.y,p.x,p.y)<175**2)dmg*=1+.18*u.closeQuarters;if(p.heartfireT>0)dmg*=1+.12*(u.heartfire||0);if(u.kindleMark){if(e.cardMarkT<G.t||e.cardMarkOwner!==1)e.cardMark=0;e.cardMarkOwner=1;e.cardMarkT=G.t+2;e.cardMark=Math.min(8,(e.cardMark||0)+1);dmg*=1+e.cardMark*.025*u.kindleMark;}longDamage(e,dmg,ang,crit,kb,kind);if(crit&&!e.dead){G.run.cardCrit=(G.run.cardCrit||0)+1;if(u.critMend&&G.run.cardCrit%(10-2*u.critMend)===0)cardHeal(3*u.critMend,'MERCIFUL SPARK');if(u.shockChain){const targets=G.enemies.filter(q=>q!==e&&!q.dead&&d2(q.x,q.y,e.x,e.y)<230**2).slice(0,u.shockChain+1);for(const q of targets)longDamage(q,p.dmg*.35*u.shockChain,Math.atan2(q.y-e.y,q.x-e.x),false,.2,'storm');}if(u.supernova){G.run.superCrit=(G.run.superCrit||0)+1;if(G.run.superCrit%20===0){nova(e.x,e.y,260,p.dmg*5);sfx('mythic');}}}};
+const longHurt=hurtPlayer;
+hurtPlayer=function(dmg,sx,sy){const p=G.player,u=G.run?.up||{};if(!p)return;if(u.cauterize){const source=G.enemies.find(e=>!e.dead&&d2(e.x,e.y,sx,sy)<60**2);if(source?.burnT>0)dmg*=1-.08*u.cauterize;}dmg*=1-(p.cardArmor||0);if(G.bossActive&&u.bossWard)dmg*=1-.07*u.bossWard;if(u.radiantDebt)dmg*=1.15;if(p.cardWard>0){const used=Math.min(p.cardWard,dmg);p.cardWard-=used;dmg-=used;if(dmg<1){sfx('shield');return;}dmg=Math.max(1,Math.round(dmg));}if(p.hp-dmg<=0&&u.dawnward&&!G.run.dawnwardFloor){G.run.dawnwardFloor=G.floor;p.hp=Math.max(1,Math.round(p.maxHp*.2));p.hitCd=2.5;nova(p.x,p.y,180,p.dmg*2.5);toast('DAWNWARD','the floor gives you back');sfx('mythic');return;}const hp=p.hp;longHurt(dmg,sx,sy);if(p.hp<hp&&u.phoenixWake){G.run.cardFields=G.run.cardFields||[];G.run.cardFields.push({x:p.x,y:p.y,t:3,tick:0,kind:'phoenix',rank:u.phoenixWake});}};
+const longKill=killEnemy;
+killEnemy=function(e){const was=e.dead,burning=e.burnT>0,x=e.x,y=e.y,elite=e.elite;longKill(e);if(was||!e.dead||!G.run)return;const u=G.run.up;if(elite&&u.dashReset)G.player.dashCdT=0;if(elite&&u.starfall){G.run.cardStrikes=G.run.cardStrikes||[];for(let i=0;i<3;i++)G.run.cardStrikes.push({x:x+rand(-65,65),y:y+rand(-65,65),t:.35+i*.28});}if(burning&&u.worldfire){for(const q of G.enemies)if(!q.dead&&d2(q.x,q.y,x,y)<150**2){q.burnT=4;q.burnRank=Math.max(q.burnRank||0,3);q.burnTick=.2;}nova(x,y,95,G.player.dmg*.8);}};
+function cardHeal(amount,label){const p=G.player,u=G.run.up,before=p.hp;p.hp=Math.min(p.maxHp,p.hp+amount);const excess=Math.max(0,before+amount-p.maxHp);if(excess&&u.overheal)p.cardWard=Math.min(p.maxHp*.35,(p.cardWard||0)+excess*(1+.5*u.overheal));if(p.hp>before){p.heartfireT=u.heartfire?4:0;addText(p.x,p.y-22,'+'+Math.round(p.hp-before),'#ffac82',13);if(label)fieldNote(label,1.5);sfx('heart');}};
+const longTick=tickBlessings;
+tickBlessings=function(dt){const p=G.player;if(!p){longTick(dt);return;}const u=G.run.up;longTick(dt);p.cardWard=Math.max(0,(p.cardWard||0)-dt*.7);p.heartfireT=Math.max(0,(p.heartfireT||0)-dt);if(u.lowGlow&&p.hp<p.maxHp*.4)p.hp=Math.min(p.maxHp,p.hp+dt*.32*u.lowGlow);p.pathSpeed=u.pathfinder&&G.run.floorAge<10?1+u.pathfinder*.025:1;if(u.berserk)p.shotT-=dt*(1-p.hp/p.maxHp)*.35*u.berserk;if(p.heartfireT>0)p.shotT-=dt*.12*u.heartfire;
+ for(const b of G.bullets){if(b.seeking){let target=null,best=180**2;for(const e of G.enemies){const dd=d2(b.x,b.y,e.x,e.y);if(!e.dead&&dd<best){best=dd;target=e;}}if(target){const speed=Math.hypot(b.vx,b.vy),a=Math.atan2(target.y-b.y,target.x-b.x),wantX=Math.cos(a)*speed,wantY=Math.sin(a)*speed;b.vx=lerp(b.vx,wantX,b.seeking);b.vy=lerp(b.vy,wantY,b.seeking);}}if(b.emberMine&&b.life<.04&&!b.mined){b.mined=true;nova(b.x,b.y,38+12*b.emberMine,p.dmg*.22*b.emberMine);}}
+ const dashed=p._cardDash&&!p.dashT;if(dashed&&u.dashBurst)nova(p.x,p.y,65+15*u.dashBurst,p.dmg*.55*u.dashBurst);p._cardDash=p.dashT>0;
+ if(u.timePocket&&!p.moving)for(const b of G.ebul)if(d2(b.x,b.y,p.x,p.y)<260**2){b.vx*=Math.pow(.72,dt*u.timePocket);b.vy*=Math.pow(.72,dt*u.timePocket);}
+ if(u.voidOrbit&&G.ebul.length){p.voidOrbitA=(p.voidOrbitA||0)+dt*2.1;const ox=p.x+Math.cos(p.voidOrbitA)*78,oy=p.y+Math.sin(p.voidOrbitA)*78,hit=G.ebul.findIndex(b=>d2(b.x,b.y,ox,oy)<22**2);if(hit>=0){G.ebul.splice(hit,1);burst(ox,oy,8,'#ad86ff',120,.3,2,true);sfx('shield');}}
+ if(u.sunspot){p.sunspotT=(p.sunspotT||0)-dt;if(p.sunspotT<=0){p.sunspotT=7-u.sunspot;for(const e of G.enemies)if(!e.dead&&d2(e.x,e.y,p.x,p.y)<105**2)longDamage(e,p.dmg*.45*u.sunspot,Math.atan2(e.y-p.y,e.x-p.x),false,.2,'sunspot');burst(p.x,p.y,14,'#ffd36e',100,.35,2,true);}}
+ if(u.endless){p.endlessT=(p.endlessT||30)-dt;if(p.endlessT<=0){p.endlessT=30;G.run.endlessStacks=(G.run.endlessStacks||0)+1;p.dmg*=1.02;addText(p.x,p.y-25,'ENDLESS +2%','#ffc86c',12);}}
+ if(G.run.cardFields)for(let i=G.run.cardFields.length-1;i>=0;i--){const f=G.run.cardFields[i];f.t-=dt;f.tick-=dt;if(f.tick<=0){f.tick=.25;for(const e of G.enemies)if(!e.dead&&d2(e.x,e.y,f.x,f.y)<(f.kind==='blackHole'?125:90)**2){if(f.kind==='blackHole'&&!e.isBoss){const d=Math.max(1,Math.hypot(f.x-e.x,f.y-e.y));e.kbx+=(f.x-e.x)/d*85;e.kby+=(f.y-e.y)/d*85;}longDamage(e,p.dmg*(f.kind==='blackHole'?.22:.16)*(f.rank||1),0,false,0,f.kind);}}if(f.t<=0)G.run.cardFields.splice(i,1);}
+ if(G.run.cardFlares)for(let i=G.run.cardFlares.length-1;i>=0;i--){const q=G.run.cardFlares[i];q.t-=dt;if(q.t<=0){for(const e of G.enemies)if(!e.dead&&d2(e.x,e.y,q.x,q.y)<(100+15*q.rank)**2)longDamage(e,p.dmg*MELEE.damage*.45*q.rank,Math.atan2(e.y-q.y,e.x-q.x),false,.5,'echoFlare');burst(q.x,q.y,18,'#ffce83',150,.4,2.5,true);G.run.cardFlares.splice(i,1);}}
+ if(G.run.cardStrikes)for(let i=G.run.cardStrikes.length-1;i>=0;i--){const q=G.run.cardStrikes[i];q.t-=dt;if(q.t<=0){nova(q.x,q.y,75,p.dmg*1.8);G.run.cardStrikes.splice(i,1);sfx('comet');}}
+};
+const longUpdatePicks=updatePicks;
+updatePicks=function(dt){const p=G.player,hp=p?.hp||0,before=new Map(G.picks.map(o=>[o,o.kind]));longUpdatePicks(dt);if(!G.run||!p)return;const u=G.run.up,collected=[...before].filter(([o])=>!G.picks.includes(o));for(const [o,kind] of collected){if(kind==='ess'){if(u.warmPocket&&chance(.18*u.warmPocket))addEss(1);if(u.essPulse){G.run.essPulse=(G.run.essPulse||0)+1;if(G.run.essPulse%8===0)nova(p.x,p.y,105,p.dmg*.65*u.essPulse);}}if(kind==='heart'){const bonus=o.val*.25*(u.coalHeart||0);if(bonus)cardHeal(bonus);if(u.heartfire)p.heartfireT=4;}}if(p.hp>hp&&u.heartfire)p.heartfireT=4;};
+
+/* The Resting Flame now exists on every floor. It is always near the entry,
+   can be used once, and remains used after saving and resuming. */
+function floorFixtures(){return G.world?.region==='late'?G.world.lateFixtures:G.world?.fixtures;}
+function ensureRestingFlame(){if(!G.world||!G.player)return;const list=floorFixtures();if(!list)return;let b=list.find(o=>o.kind==='brazier'),s=G.world.rooms[0],pos=safePosition(G.world,s.cx*TILE+18+58,s.cy*TILE+18,18)||{x:G.player.x+50,y:G.player.y};if(!b){b={kind:'brazier',x:pos.x,y:pos.y,lit:false,resting:true};list.push(b);}else if(!b.lit){b.x=pos.x;b.y=pos.y;b.resting=true;}G.world.restingFlame=b;}
+const longSetup=setupFloor;
+setupFloor=function(f){longSetup(f);if(G.run){G.run.floorAge=0;ensureRestingFlame();}};
+const longResumeCards=resumeRun;
+resumeRun=function(){longResumeCards();if(G.run)ensureRestingFlame();};
+function nearestRestingFlame(){const list=floorFixtures()||[];let best=null,dist=74**2;for(const o of list)if(o.kind==='brazier'){const dd=d2(o.x,o.y,G.player.x,G.player.y);if(dd<dist){dist=dd;best=o;}}return best;}
+function useRestingFlame(o){if(o.lit){fieldNote('The Resting Flame has gone quiet.',2);return;}o.lit=true;const heal=Math.ceil(G.player.maxHp*(bossFloorAt(G.floor)?.28:.22));cardHeal(heal,'RESTING FLAME · '+heal+' HEALTH');G.world.torches.push({x:o.x,y:o.y-15,s:0});burst(o.x,o.y,24,'#ffd083',145,1,3,true);sfx('brazier');saveNow();}
+const longBeforeUpdate=hollowBeforeUpdate;
+hollowBeforeUpdate=function(dt){if(G.run)G.run.floorAge=(G.run.floorAge||0)+dt;if(interactQueued){const b=nearestRestingFlame();if(b){interactQueued=false;useRestingFlame(b);return true;}}return longBeforeUpdate(dt);};
+const longHUD=updateHUD;
+updateHUD=function(dt){longHUD(dt);if(!G.player||G.state!=='playing')return;const b=nearestRestingFlame();if(b){T('promptTxt').textContent=b.lit?'RESTING FLAME SPENT':'REST · RESTORE '+(bossFloorAt(G.floor)?28:22)+'% HEALTH';T('prompt').classList.add('on');}};
+function drawRestingFlame(ctx,o){const t=save.motion?0:G.tAll,lit=o.lit;ctx.save();ctx.translate(Math.round(o.x),Math.round(o.y));ctx.fillStyle='#16151a';ctx.fillRect(-17,8,34,7);ctx.fillStyle='#554535';ctx.fillRect(-13,2,26,8);ctx.fillStyle='#9b7b54';ctx.fillRect(-10,0,20,3);ctx.strokeStyle='#c7a36f';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,1);ctx.lineTo(-18,-10);ctx.moveTo(13,1);ctx.lineTo(18,-10);ctx.stroke();for(let i=0;i<5;i++){const a=t*(i%2?1.1:-.8)+i*TAU/5,r=lit?18:11;ctx.fillStyle=lit?(i%2?'#ffd98d':'#ff8c4d'):'#51483f';ctx.fillRect(Math.cos(a)*r-2,-13+Math.sin(a)*r*.45-2,4,4);}if(lit){glowImg('ember',0,-12,58,.42);ctx.fillStyle='#fff0bb';ctx.fillRect(-3,-22+Math.sin(t*6)*2,6,16);ctx.fillStyle='#ff9b4d';ctx.fillRect(-7,-15,14,13);}ctx.restore();}
+const longDrawLate=drawLateWorld;
+drawLateWorld=function(ctx){longDrawLate(ctx);if(G.world?.region==='late')for(const o of G.world.lateFixtures||[])if(o.kind==='brazier')drawRestingFlame(ctx,o);};
+const longValidateCheckpoint=validateCheckpoint;
+validateCheckpoint=function(r){const out=longValidateCheckpoint(r);const list=r.world?.region==='late'?r.world.lateFixtures:r.world?.fixtures||[];for(const o of list)if(o.kind==='brazier'&&typeof o.lit!=='boolean')throw Error('Invalid Resting Flame');return out;};
+
+/* Region-aware score: eight melodic palettes, a firm pulse during guardian
+   fights, and louder but limited output. The first user input unlocks audio. */
+const REGION_SCORE={hollow:[0,3,5,7,10],garden:[0,2,5,7,9],reservoir:[0,2,3,7,9],foundry:[0,3,5,6,10],observatory:[0,2,6,7,11],archive:[0,1,5,7,8],court:[0,3,5,8,10],choir:[0,2,5,9,11],citadel:[0,1,5,6,10],heart:[0,3,7,8,11]};
+let longScoreTimer=0,longScoreBeat=0;
+function scoreTone(freq,dur=.65,vol=.018,delay=0,type='triangle'){if(!AC)return;const t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain(),lp=AC.createBiquadFilter();o.type=type;o.frequency.value=freq;lp.type='lowpass';lp.frequency.value=1800;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.025);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(lp);lp.connect(g);g.connect(musLP);o.start(t);o.stop(t+dur+.05);}
+function scorePulse(){if(!AC||!save.music||AC.state!=='running'||document.hidden||!G.run||!['playing','dialogue','chapter'].includes(G.state))return;const key=G.world?.region==='late'?G.world.lateKey:G.floor<=5?'hollow':'garden',scale=REGION_SCORE[key]||REGION_SCORE.hollow,root=G.bossActive?55:73.42,note=scale[(longScoreBeat*3+Math.floor(G.floor/5))%scale.length],freq=root*Math.pow(2,note/12)*(longScoreBeat%8>5?2:1);scoreTone(freq,G.bossActive?.38:1.05,G.bossActive?.026:.018);if(G.bossActive&&longScoreBeat%2===0){thump(72,42,.19,.045);if(longScoreBeat%8===0)air(.22,.025,900,180,.8,0,'lowpass');}else if(longScoreBeat%8===0)scoreTone(root/2,2.4,.022,0,'sine');longScoreBeat++;}
+const longInitAudio=initAudio;
+initAudio=function(){longInitAudio();if(AC){applyAudioSettings();if(!longScoreTimer)longScoreTimer=setInterval(scorePulse,720);}};
+const longApplyAudio=applyAudioSettings;
+applyAudioSettings=function(){longApplyAudio();if(!AC)return;const t=AC.currentTime;if(sfxDry)sfxDry.gain.setTargetAtTime(save.sfx?.68:0,t,.08);if(sfxSend)sfxSend.gain.setTargetAtTime(save.sfx?.34:0,t,.08);if(musDry)musDry.gain.setTargetAtTime(save.music?.22:0,t,.08);if(musSend)musSend.gain.setTargetAtTime(save.music?.32:0,t,.08);if(droneG)droneG.gain.setTargetAtTime(save.music?.68:0,t,.08);};
+const longSfx=sfx;
+sfx=function(name,a){longSfx(name,a);if(!AC||!save.sfx)return;if(name==='flare'){air(.28,.085,280,2600,.8);thump(190,72,.22,.075);bell(784,.45,.025,.03,true);}else if(name==='brazier'){swell([196,261.63,329.63,392],1.8,.045,0);air(1.2,.04,350,1500,.55);}else if(name==='comet'){air(.4,.07,1900,240,.7);thump(230,55,.38,.095);}else if(name==='mythic'){swell([110,164.81,220,329.63,440],1.6,.045,0);bell(1318.5,1.2,.028,.12,false);}else if(name==='shield'){bell(392,.5,.026,0,true);air(.18,.025,1400,500,.8);}};
+
+const longCombatFX=drawCombatFX;
+drawCombatFX=function(ctx){longCombatFX(ctx);const p=G.player;if(!p||!G.run)return;const t=save.motion?0:G.tAll;ctx.save();ctx.globalCompositeOperation='lighter';if(p.cardWard>0){ctx.strokeStyle='#ffe7a5';ctx.globalAlpha=.35+.25*Math.sin(t*5);ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,21,0,TAU);ctx.stroke();}if(G.run.up.voidOrbit){const a=p.voidOrbitA||0,x=p.x+Math.cos(a)*78,y=p.y+Math.sin(a)*78;glowImg('violet',x,y,22,.45);ctx.fillStyle='#d8b7ff';ctx.globalAlpha=.85;ctx.fillRect(x-4,y-4,8,8);ctx.fillStyle='#161120';ctx.fillRect(x-2,y-2,4,4);}for(const f of G.run.cardFields||[]){const max=f.kind==='blackHole'?125:90,life=clamp(f.t/(f.kind==='blackHole'?4:3),0,1);ctx.strokeStyle=f.kind==='blackHole'?'#ae83ff':'#ff9861';ctx.globalAlpha=.2+.3*life;ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(f.x,f.y,max*(.35+i*.24)+Math.sin(t*3+i)*4,t*(i%2?-.7:.5),t*(i%2?-.7:.5)+4.7);ctx.stroke();}}for(const q of G.run.cardStrikes||[]){ctx.strokeStyle='#ffe6a0';ctx.globalAlpha=.35+clamp(1-q.t/.9,0,1)*.5;ctx.beginPath();ctx.moveTo(q.x,q.y-90);ctx.lineTo(q.x,q.y+8);ctx.stroke();ctx.beginPath();ctx.arc(q.x,q.y,18+q.t*20,0,TAU);ctx.stroke();}for(const q of G.run.cardFlares||[]){ctx.strokeStyle='#ffc778';ctx.globalAlpha=.5;ctx.beginPath();ctx.arc(q.x,q.y,28+(1-q.t/.32)*25,q.a-.8,q.a+.8);ctx.stroke();}ctx.restore();};
 
 init();
 </script>
