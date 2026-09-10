@@ -214,7 +214,7 @@ h1.title{font-size:clamp(48px,7.6vw,98px);letter-spacing:.10em;padding:0;margin:
 .toast{font-size:11px;letter-spacing:.1em;border-radius:4px;text-align:center;max-width:450px}.toast .sub{font-family:system-ui}
 #botL{left:20px;bottom:22px;max-width:32vw}.chip{border-radius:3px;font-size:10px}.chip[title]{pointer-events:auto;cursor:help}
 #botC{bottom:24px}#dashwrap span{font-size:9px}.hud-actions{position:absolute;right:20px;bottom:20px;display:flex;gap:7px;pointer-events:auto}.hud-actions .btn{padding:8px 12px;font:10px system-ui;letter-spacing:.06em;background:#0b131ce8}
-#fps{display:none}#quickControls{position:absolute;left:20px;bottom:7px;color:#708294;font:9px system-ui;letter-spacing:.02em}#assistLabel{color:#a0ddce}
+#fps{display:none}#quickControls{position:absolute;left:20px;bottom:7px;color:#708294;font:9px system-ui;letter-spacing:.02em}
 #prompt{font:11px Georgia;letter-spacing:.1em;border-radius:4px}.sbox{border-radius:4px}.dword-sub{font-size:10px;letter-spacing:.16em}.bigword{letter-spacing:.12em}
 .card{border-radius:5px;width:230px;text-align:center;color:inherit;font:inherit;min-height:300px;padding:26px 20px;background:linear-gradient(#17202bea,#0d131bf5);box-shadow:0 20px 45px #0006}
 .card .nm{font-family:Georgia;font-size:18px;line-height:1.35;letter-spacing:.01em}.card .ds{font-size:12px;color:#bfccd9;line-height:1.6}.card .rar{font-size:9px;letter-spacing:.22em}.card .ic{border-radius:6px;background:#ffffff05;transform:rotate(45deg);margin:10px auto 27px}.card .ic svg{transform:rotate(-45deg)}
@@ -452,7 +452,7 @@ body:has(#finale.open) #hud{visibility:hidden}
   <div id="weaponHUD"><div class="weapon-top"><span id="weaponStatus">EMBER BOLT</span><span id="ammoCount">6 / 6</span></div><div id="ammoRounds" aria-hidden="true"></div><div class="weapon-reload-track"><div id="reloadProgress"></div></div><div class="weapon-actions"><button id="btnReload" aria-label="Rekindle ember charges"><kbd>R</kbd> REKINDLE</button><button id="btnMelee" aria-label="Release close-range Flare"><kbd>K</kbd> FLARE · <span id="bladePower">2.25×</span></button></div><div class="blade-line"><span id="bladeReady">FLARE READY</span><div class="blade-track"><div id="bladeProgress"></div></div></div></div>
   <div id="fps"></div>
   <div id="quickControls">WASD move · J / click Ember Bolt · K / right-click Flare · R Rekindle · Space dash · E interact</div>
-  <div class="hud-actions"><button class="btn" id="btnAssist" title="F: toggle aim assist"><span id="assistLabel">ASSIST OFF</span></button><button class="btn" id="btnPause">PAUSE <kbd>Esc</kbd></button></div>
+  <div class="hud-actions"><button class="btn" id="btnPause">PAUSE <kbd>Esc</kbd></button></div>
   <div id="touchControls" aria-label="Touch controls">
     <div class="touch-stick-wrap" id="moveStickWrap"><div class="touch-caption"><b>MOVE</b> DRAG</div><div class="touch-stick" id="moveStick" aria-label="Movement joystick"><i class="touch-stick-grid"></i><i class="touch-knob"></i></div></div>
     <div class="touch-actions">
@@ -577,7 +577,6 @@ body:has(#finale.open) #hud{visibility:hidden}
 </div>
 <div id="treeTip"></div>
 <div id="settings" class="ov" style="z-index:50"><div class="panel" style="width:530px;text-align:left"><div class="bigword" style="font-size:24px">MAKE THE DESCENT YOURS</div>
- <label class="settings-row"><span>Aim assist<small>Automatically aim and cast at visible enemies. Toggle with F.</small></span><input id="setAssist" type="checkbox"></label>
  <label class="settings-row"><span>Music<small>Procedural ambient soundtrack.</small></span><input id="setMusic" type="checkbox"></label>
  <label class="settings-row"><span>Sound effects<small>Combat, pickups, and menu sounds.</small></span><input id="setSfx" type="checkbox"></label>
  <label class="settings-row"><span>Reduced motion<small>Disable camera shake and menu animations.</small></span><input id="setMotion" type="checkbox"></label>
@@ -664,7 +663,7 @@ const hide = id => T(id).classList.remove('open');
 
 /* ---------------- SAVE / META PROGRESSION ---------------- */
 const SAVE_KEY='voidfall_save_v1';
-const DEF_SAVE = ()=>({v:1, essence:0, nodes:{}, bestFloor:0, bestLevel:0, totalRuns:0, totalKills:0, totalEssence:0, victories:0, guardians:0, tut:0, music:1, sfx:1, assist:0, motion:0, touch:0, quality:"full", resume:null});
+const DEF_SAVE = ()=>({v:1, essence:0, nodes:{}, bestFloor:0, bestLevel:0, totalRuns:0, totalKills:0, totalEssence:0, victories:0, guardians:0, tut:0, music:1, sfx:1, motion:0, touch:0, quality:"full", resume:null});
 let save = DEF_SAVE();
 let saveDirty=false, saveTimer=0;
 function loadSave(){
@@ -1000,7 +999,6 @@ addEventListener('keydown', e=>{
   if(G.state==='playing'){
     if(e.code==='Space') dashQueued=true;
     if(e.code==='KeyE') interactQueued=true;
-    if(e.code==='KeyF') toggleAssist();
   }
   if(G.state==='levelup'){
     if(e.code==='Digit1'||e.code==='Numpad1') chooseCard(0);
@@ -1724,6 +1722,7 @@ function damageEnemy(e,dmg,ang,isCrit,kbMul){
   if(p.execB>0 && e.hp < e.max*.3) dmg*=1+p.execB;
   dmg*=rand(.92,1.1);
   dmg=Math.max(1,Math.round(dmg));
+  if(e.endlessDamageCeiling)dmg=Math.min(dmg,Math.max(1,Math.round(e.max*e.endlessDamageCeiling)));
   // Guardian phase boundaries cannot be skipped by a single proc cascade.
   if(e.lateBoss&&e.bs){
     if(e.bossKey==='regents'){
@@ -1888,7 +1887,7 @@ function startRun(){
   const tutorialRun=G.run;
   if(!save.tut){
     save.tut=1; markSave();
-    setTimeout(()=>{if(G.run===tutorialRun&&G.state==='playing')toast('WASD — MOVE','J to aim and cast · F for aim assist');},600);
+    setTimeout(()=>{if(G.run===tutorialRun&&G.state==='playing')toast('WASD — MOVE','J to aim and cast · K for Flare');},600);
     setTimeout(()=>{if(G.run===tutorialRun&&G.state==='playing')toast('HOLD CLICK — CAST','or hold J to cast at nearby enemies');},3200);
     setTimeout(()=>{if(G.run===tutorialRun&&G.state==='playing')toast('SPACE — DASH','brief invulnerability');},5800);
     setTimeout(()=>{if(G.run===tutorialRun&&G.state==='playing')toast('PRESS E AT THE PORTAL','descend when ready');},8400);
@@ -2130,7 +2129,7 @@ function update(dt){
   if(combatTick(dt))return;
   run.t+=dt; G.t+=dt;
   if(G.victoryPending>0){G.victoryPending-=dt;if(G.victoryPending<=0){victory();return;}}
-  if(save.assist||keys.KeyJ||touchInput.fire){aimTarget=nearestTarget();}else{aimTarget=null;}
+  if(keys.KeyJ||touchInput.fire){aimTarget=nearestTarget();}else{aimTarget=null;}
   if(xpComboT>0){ xpComboT-=dt; if(xpComboT<=0) xpCombo=0; }
   // ---- movement ----
   let mx=0,my=0;
@@ -2175,7 +2174,7 @@ function update(dt){
   if(p.regen>0&&p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.regen*dt);
   p.face=aimAngle();
   // ---- firing ----
-  if((mouse.down || keys.KeyJ || touchInput.fire || (save.assist && aimTarget)) && p.shotT<=0) fireVolley();
+  if((mouse.down || keys.KeyJ || touchInput.fire) && p.shotT<=0) fireVolley();
   // ---- orbitals ----
   if(p.orbN>0){
     p.orbA+=dt*2.7*(p.orbitRate||1);
@@ -2741,7 +2740,7 @@ function lightingPass(sx,sy){
 }
 function drawCrosshair(ctx){
   const p=G.player;
-  const m=(save.assist||keys.KeyJ)?(aimTarget?{x:aimTarget.x-G.cam.x,y:aimTarget.y-G.cam.y}:{x:p.x-G.cam.x+Math.cos(p.face)*75,y:p.y-G.cam.y+Math.sin(p.face)*75}):mouse;
+  const m=keys.KeyJ?(aimTarget?{x:aimTarget.x-G.cam.x,y:aimTarget.y-G.cam.y}:{x:p.x-G.cam.x+Math.cos(p.face)*75,y:p.y-G.cam.y+Math.sin(p.face)*75}):mouse;
   const r=9+(p&&p.muzzle>0?4:0);
   ctx.strokeStyle='rgba(255,214,140,.9)'; ctx.lineWidth=1.6;
   ctx.beginPath(); ctx.arc(m.x,m.y,r,0,TAU); ctx.stroke();
@@ -3119,9 +3118,8 @@ function nearestTarget(){
 function aimAngle(){
   const p=G.player;
   if(touchInput.aimActive&&Math.hypot(touchInput.aimX,touchInput.aimY)>.12)return Math.atan2(touchInput.aimY,touchInput.aimX);
-  if((save.assist||keys.KeyJ)&&aimTarget&&!aimTarget.dead)return Math.atan2(aimTarget.y-p.y,aimTarget.x-p.x);
-  if(touchInput.fire&&save.assist&&aimTarget&&!aimTarget.dead)return Math.atan2(aimTarget.y-p.y,aimTarget.x-p.x);
-  if(save.assist||keys.KeyJ)return p.face||0;
+  if(keys.KeyJ&&aimTarget&&!aimTarget.dead)return Math.atan2(aimTarget.y-p.y,aimTarget.x-p.x);
+  if(keys.KeyJ)return p.face||0;
   return Math.atan2(mouse.y+G.cam.y-p.y,mouse.x+G.cam.x-p.x);
 }
 function safePosition(w,x,y,r){
@@ -3151,13 +3149,11 @@ function selectNode(n){
   document.querySelectorAll('[data-node]').forEach(el=>{const node=NODE_BY_ID[el.dataset.node],state=nodeState(node);el.classList.toggle('selected',node===n);el.setAttribute('aria-pressed',String(node===n));el.setAttribute('aria-label',node.name+' · '+(state===2?'owned':node.cost+' essence'+(state===0?' · locked':'')));});
   const m=computeMeta();T('metaTotal').innerHTML=`NEXT DESCENT<br><b>+${Math.round((m.dmg-1)*100)}%</b> damage · <b>+${m.hp}</b> health<br><b>+${Math.round((m.rate-1)*100)}%</b> casting rate · <b>+${Math.round((m.speed-1)*100)}%</b> speed<br>${Object.keys(save.nodes).length} / ${TREE_NODES.length} sigils awakened`;
 }
-function toggleAssist(){save.assist=save.assist?0:1;syncSettings();saveNow();if(G.state==='playing')toast(save.assist?'AIM ASSIST ON':'MANUAL AIM',save.assist?'move, dodge, and explore':'hold click or J to fire');}
 function applyAudioSettings(){if(!AC)return;const t=AC.currentTime;musDry.gain.setTargetAtTime(save.music?.14:0,t,.08);musSend.gain.setTargetAtTime(save.music?.26:0,t,.08);if(droneG)droneG.gain.setTargetAtTime(save.music?.5:0,t,.08);}
 function syncSettings(){
-  for(const [id,key] of [['setAssist','assist'],['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])T(id).checked=!!save[key];
+  for(const [id,key] of [['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])T(id).checked=!!save[key];
   const touchDevice=(typeof navigator!=='undefined'&&navigator.maxTouchPoints>0)||(typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches);
   T('setQuality').value=save.quality;document.body.classList.toggle('motion-low',!!save.motion);document.body.classList.toggle('touch',!!save.touch||touchDevice);
-  T('assistLabel').textContent=save.assist?'ASSIST ON':'ASSIST OFF';T('btnAssist').setAttribute('aria-pressed',String(!!save.assist));
   T('btnMusic').classList.toggle('off',!save.music);T('btnSfx').classList.toggle('off',!save.sfx);
   T('btnMusic').setAttribute('aria-pressed',String(!!save.music));T('btnSfx').setAttribute('aria-pressed',String(!!save.sfx));
 }
@@ -3207,11 +3203,11 @@ function validateCheckpoint(r){
   if(!Number.isInteger(r.run.level)||r.run.level<1||!r.run.up||!['paused','levelup'].includes(r.state)||!finite(r.pendingLevels,0,10000))fail();
   for(const [key,val] of Object.entries(r.run.up)){const o=POOL.find(p=>p.id===key);if(!o||!Number.isInteger(val)||val<0||val>o.max)fail();}
   for(const k of ['dmg','hp','rate','speed','crit','mag','dash','xp','ess'])if(!finite(r.meta[k]))fail();
-  for(const k of ['shotT','hitCd','dashT','dashCdT','kbx','kby','orbA','muzzle','face','dashDx','dashDy','ghostT','lean','dmg','shotInt','proj','pierce','ric','regen','orbN','dashCd','xpMul','execB','speed','magnet','critC'])if(!finite(r.player[k],-1e6,1e12))fail();
+  for(const k of ['shotT','hitCd','dashT','dashCdT','kbx','kby','orbA','muzzle','face','dashDx','dashDy','ghostT','lean','dmg','shotInt','proj','pierce','ric','regen','orbN','dashCd','xpMul','execB','speed','magnet','critC'])if(!finite(r.player[k],-1e6,9e15))fail();
   for(const k of ['enemies','picks','chests','bullets','ebul','cardIds'])if(!Array.isArray(r[k])||r[k].length>1000)fail();
-  if(r.cardIds.some(id=>!POOL.some(o=>o.id===id)))fail();
+  if(r.cardIds.some(id=>!POOL.some(o=>o.id===id)&&id!=='emberglow'))fail();
   if(!r.portal||!finite(r.portal.x,0,w.W*TILE)||!finite(r.portal.y,0,w.H*TILE)||typeof r.portal.active!=='boolean')fail();
-  for(const e of r.enemies){if(!ETYPES[e.type]&&e.type!=='boss')fail();for(const k of ['x','y','r','hp','max','spd','dmg','xp','uid','kb','kbx','kby','hitT','atkT','seed','t1','t2','orbT'])if(!finite(e[k],-1e6,1e12))fail();if(e.spr!==e.type||!['chase','zigzag','ranged','wisp','boss','gate','warden','garden','matriarch','late','lateBoss'].includes(e.ai))fail();if(e.isBoss)for(const k of ['tier','phase','chargeT','cvx','cvy','summonT','teleT','t3'])if(!finite(e[k],-1e6,1e12))fail();}
+  for(const e of r.enemies){if(!ETYPES[e.type]&&e.type!=='boss')fail();for(const k of ['x','y','r','hp','max','spd','dmg','xp','uid','kb','kbx','kby','hitT','atkT','seed','t1','t2','orbT'])if(!finite(e[k],-1e6,9e15))fail();if(e.spr!==e.type||!['chase','zigzag','ranged','wisp','boss','gate','warden','garden','matriarch','late','lateBoss'].includes(e.ai))fail();if(e.isBoss)for(const k of ['tier','phase','chargeT','cvx','cvy','summonT','teleT','t3'])if(!finite(e[k],-1e6,1e12))fail();}
   for(const p of r.picks)if(!['xp','ess','heart'].includes(p.kind)||!finite(p.val)||!finite(p.x,-100,w.W*TILE+100)||!finite(p.y,-100,w.H*TILE+100)||!finite(p.vx,-1e4,1e4)||!finite(p.vy,-1e4,1e4)||!finite(p.t,-1e6,1e12))fail();
   for(const b of [...r.bullets,...r.ebul])for(const k of ['x','y','vx','vy','r','dmg','life'])if(!finite(b[k],-1e6,1e12))fail();
   for(const b of r.bullets)if(!Array.isArray(b.hits))fail();
@@ -3222,7 +3218,7 @@ function validateSave(raw){
   if(!raw||raw.v!==1||typeof raw!=='object')throw Error('Not a VoidFall save');
   const scan=(v,depth=0)=>{if(depth>12)throw Error('Save is too deeply nested');if(typeof v==='number'&&!Number.isFinite(v))throw Error('Invalid value');if(typeof v==='string'&&v.length>200)throw Error('Invalid text');if(v&&typeof v==='object'){if(Array.isArray(v)&&v.length>17000)throw Error('Save is too large');for(const k of Object.keys(v)){if(['__proto__','constructor','prototype'].includes(k))throw Error('Invalid key');scan(v[k],depth+1);}}};scan(raw);
   const clean=DEF_SAVE();for(const k of ['essence','bestFloor','bestLevel','totalRuns','totalKills','totalEssence','victories','guardians']){if(raw[k]!==undefined&&(!Number.isFinite(raw[k])||raw[k]<0))throw Error('Invalid progress');clean[k]=Math.min(1e12,Math.floor(raw[k]||0));}
-  for(const k of ['tut','music','sfx','assist','motion','touch'])if(raw[k]!==undefined)clean[k]=raw[k]?1:0;clean.quality=raw.quality==='light'?'light':'full';
+  for(const k of ['tut','music','sfx','motion','touch'])if(raw[k]!==undefined)clean[k]=raw[k]?1:0;clean.quality=raw.quality==='light'?'light':'full';
   for(const n of TREE_NODES)if(raw.nodes&&raw.nodes[n.id]===true)clean.nodes[n.id]=true;
   if(raw.resume)clean.resume=validateCheckpoint(raw.resume);return clean;
 }
@@ -3268,12 +3264,12 @@ function wireTouchAction(id,fn){
 }
 function wireRefinements(){
   syncSettings();syncSaveStatus();
-  on(T('btnContinue'),'click',resumeRun);on(T('btnAssist'),'click',toggleAssist);on(T('btnPause'),'click',()=>pauseGame(true));
+  on(T('btnContinue'),'click',resumeRun);on(T('btnPause'),'click',()=>pauseGame(true));
   on(T('btnSaveExit'),'click',()=>{saveNow();backToMenu();});
   on(T('btnSettings'),'click',openSettings);on(T('btnPauseSettings'),'click',openSettings);on(T('btnSettingsClose'),'click',()=>hide('settings'));
   on(T('btnResetEverything'),'click',()=>confirmAction('RESET EVERYTHING?','This erases all progress: the current run, essence, Skill Tree, ability blessings, records, memories, and settings. All dialogue will play again. This cannot be undone.','YES, RESET EVERYTHING',resetEverything));
   on(T('btnConfirmRun'),'click',()=>{hide('confirmRun');const fn=confirmCallback;confirmCallback=null;if(fn)fn();});on(T('btnCancelRun'),'click',()=>hide('confirmRun'));
-  for(const [id,key] of [['setAssist','assist'],['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])on(T(id),'change',()=>{initAudio();save[key]=T(id).checked?1:0;applyAudioSettings();syncSettings();saveNow();});
+  for(const [id,key] of [['setMusic','music'],['setSfx','sfx'],['setMotion','motion'],['setTouch','touch']])on(T(id),'change',()=>{initAudio();save[key]=T(id).checked?1:0;applyAudioSettings();syncSettings();saveNow();});
   on(T('setQuality'),'change',()=>{save.quality=T('setQuality').value;saveNow();});
   on(T('btnExport'),'click',()=>{saveNow();const blob=new Blob([JSON.stringify(save)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='voidfall-save-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);});
   on(T('btnImport'),'click',()=>T('saveFile').click());
@@ -6382,7 +6378,7 @@ buildCards=function(){
  let pool=POOL.filter(eligible);if(!pool.length)pool=[{id:'hp',r:0,max:99,w:1,icon:'heart',name:'Emberglow',ds:'Restore 25 health'}];
  const picks=(G.restoreCardIds||[]).map(id=>POOL.find(o=>o.id===id)).filter(Boolean);G.restoreCardIds=null;
  while(picks.length<3&&pool.length){const rarity=rollRarity(pool),tier=pool.filter(o=>o.r===rarity);let total=tier.reduce((n,o)=>n+o.w,0),roll=Math.random()*total,sel=tier[0];for(const o of tier){roll-=o.w;if(roll<=0){sel=o;break;}}picks.push(sel);pool=pool.filter(o=>o!==sel);}
- const wrap=T('cards');wrap.replaceChildren();for(let i=0;i<picks.length;i++){const o=picks[i],rank=u[o.id]||0,el=document.createElement('button');el.className='card';el.dataset.r=o.r;el.type='button';const pips=o.max<=8?'<div class="pips">'+Array.from({length:o.max},(_,k)=>`<em class="${k<rank?'on':''}"></em>`).join('')+'</div>':'';el.innerHTML=`<span class="key">${i+1}</span><div class="rar">${RARITY[o.r].n}</div><div class="ic"><i data-lucide="${o.icon}"></i></div><div class="nm cinzel">${o.name}</div><div class="ds">${o.ds}</div>${pips}<div class="card-rank">${rank?'RANK '+(rank+1):'NEW BLESSING'}</div>`;el._up=o;on(el,'click',()=>chooseCard(i));wrap.appendChild(el);}G.cardPool=picks;refreshIcons();
+ const wrap=T('cards');wrap.replaceChildren();for(let i=0;i<picks.length;i++){const o=picks[i],rank=u[o.id]||0,el=document.createElement('button');el.className='card';el.dataset.r=o.r;el.type='button';const pips=o.max<=8?'<div class="pips">'+Array.from({length:o.max},(_,k)=>`<em class="${k<rank?'on':''}"></em>`).join('')+'</div>':'';el.innerHTML=`<span class="key">${i+1}</span><div class="rar">${RARITY[o.r].n}</div><div class="ic"><i data-lucide="${o.icon}"></i></div><div class="nm cinzel">${o.name}</div><div class="ds">${o.ds}</div>${pips}<div class="card-rank">${o.consumable?'TAKE THE WARMTH':rank?'RANK '+(rank+1):'NEW BLESSING'}</div>`;el._up=o;on(el,'click',()=>chooseCard(i));wrap.appendChild(el);}G.cardPool=picks;refreshIcons();
 };
 rarityOdds=function(){const depth=clamp((G.floor-1)/79,0,1),treasure=G.opts.freeChoice?1:0,luck=META.rarity||0;let o=[.55-depth*.27,.29-depth*.02,.13+depth*.15,.03+depth*.14];o[0]-=treasure*.10;o[2]+=treasure*.055;o[3]+=treasure*.045;const shift=Math.min(Math.max(0,o[0]-.18),luck);o[0]-=shift;o[1]+=shift*.25;o[2]+=shift*.48;o[3]+=shift*.27;const total=o.reduce((a,b)=>a+b,0);return o.map(v=>v/total);};
 
@@ -6477,7 +6473,7 @@ const ENDLESS_OATHS=[
  {id:'stars',name:'OATH OF STARS',gift:'Better Epic and Mythic odds',price:'Enemy projectiles travel 20% faster'}
 ];
 const endlessMutation=f=>ENDLESS_MUTATIONS[Math.floor(Math.max(0,f-51)/5)%ENDLESS_MUTATIONS.length];
-const oathRank=id=>G.run?.endlessOaths?.[id]||0;
+const oathRank=id=>Math.min(16,G.run?.endlessOaths?.[id]||0);
 function endlessUI(){if(T('endlessOath'))return;const style=document.createElement('style');style.textContent=`#endlessOath{z-index:145;background:radial-gradient(circle at 50% 30%,#24172dbb,#050711f2);padding:18px;overflow:auto}.endless-shell{width:min(900px,96vw);margin:auto;text-align:center;border:1px solid #bc8ee677;background:#0b101cee;padding:26px;box-shadow:0 0 90px #8b52c022;position:relative}.endless-shell:before{content:'';position:absolute;inset:7px;border:1px solid #d1adff22;pointer-events:none}.endless-kicker{font:10px system-ui;letter-spacing:.32em;color:#b998d2}.endless-shell h2{font:clamp(27px,5vw,45px) Georgia;color:#ead7ff;margin:12px}.endless-shell>p{color:#aeb6c9;font:13px/1.7 system-ui}.oath-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0 14px}.oath-card{min-height:210px;color:#ded9e9;border:1px solid #8869a9;background:linear-gradient(155deg,#171426,#0b101b);padding:20px 14px;cursor:pointer;transition:.18s transform,.18s border-color}.oath-card:hover,.oath-card:focus{transform:translateY(-4px);border-color:#e5c5ff;outline:none}.oath-card strong{display:block;font:18px Georgia;color:#f0dfff;margin:22px 0}.oath-card span,.oath-card small{display:block;font:12px/1.55 system-ui}.oath-card span{color:#a8e5c8}.oath-card small{color:#e39da8;margin-top:12px}.endless-mutation{color:#d0a9ed!important}#endlessRecord{color:#d8b8ee;border:1px solid #8c6ca166;padding:7px 13px;margin-top:8px;font:10px system-ui;letter-spacing:.1em}@media(max-width:700px){.oath-grid{grid-template-columns:1fr}.oath-card{min-height:130px}}`;document.head.appendChild(style);const panel=document.createElement('div');panel.id='endlessOath';panel.className='ov';panel.innerHTML=`<div class="endless-shell"><div class="endless-kicker">ENDLESS DESCENT · BINDING CHOICE</div><h2>Choose an Oath</h2><p>The deeper path gives something and takes something. Oaths stack and last until this descent ends.</p><p class="endless-mutation" id="endlessMutation"></p><div class="oath-grid" id="oathGrid"></div></div>`;document.body.appendChild(panel);}
 endlessUI();
 function endlessOathChoices(milestone){const start=Math.floor((milestone-51)/10)%ENDLESS_OATHS.length;return[ENDLESS_OATHS[start],ENDLESS_OATHS[(start+2)%6],ENDLESS_OATHS[(start+4)%6]];}
@@ -7482,10 +7478,10 @@ rollRarity=function(pool){
  for(let i=target+1;i<4;i++)if(available.has(i))return i;
  return 0;
 };
-const MYTHIC_FALLBACK={id:'hp',r:0,max:999,w:1,icon:'heart',name:'Emberglow',ds:'Restore 25 health'};
+const MYTHIC_FALLBACK={id:'emberglow',r:0,max:0,w:1,icon:'heart',name:'Emberglow',ds:'Restore 15% health',consumable:true};
 buildCards=function(){
  const u=G.run.up,eligible=o=>(u[o.id]||0)<o.max&&(!o.unlock||armoryData()[o.unlock])&&G.floor>=(o.minFloor||1);
- let pool=POOL.filter(eligible),restoreIds=G.restoreCardIds||[],restoring=restoreIds.length>0,picks=restoreIds.map(id=>POOL.find(o=>o.id===id)).filter(Boolean);G.restoreCardIds=null;
+ let pool=POOL.filter(eligible),restoreIds=G.restoreCardIds||[],restoring=restoreIds.length>0,picks=restoreIds.map(id=>POOL.find(o=>o.id===id)||(id===MYTHIC_FALLBACK.id?MYTHIC_FALLBACK:null)).filter(Boolean);G.restoreCardIds=null;
  if(!pool.some(o=>o.r===0))pool.push(MYTHIC_FALLBACK);
  while(picks.length<3&&pool.length){
   const rarity=rollRarity(pool),tier=pool.filter(o=>o.r===rarity);let total=tier.reduce((n,o)=>n+o.w,0),roll=Math.random()*total,sel=tier[0];
@@ -7496,7 +7492,7 @@ buildCards=function(){
  for(let i=0;i<picks.length;i++){
   const o=picks[i],rank=u[o.id]||0,el=document.createElement('button');el.className='card'+(o.r===3?' mythic-reveal':'');el.dataset.r=o.r;el.type='button';
   const pips=o.max<=8?'<div class="pips">'+Array.from({length:o.max},(_,k)=>`<em class="${k<rank?'on':''}"></em>`).join('')+'</div>':'';
-  el.innerHTML=`<span class="key">${i+1}</span><div class="rar">${RARITY[o.r].n}</div><div class="ic"><i data-lucide="${o.icon}"></i></div><div class="nm cinzel">${o.name}</div><div class="ds">${o.ds}</div>${pips}<div class="card-rank">${rank?'RANK '+(rank+1):'NEW BLESSING'}</div>`;el._up=o;on(el,'click',()=>chooseCard(i));wrap.appendChild(el);
+  el.innerHTML=`<span class="key">${i+1}</span><div class="rar">${RARITY[o.r].n}</div><div class="ic"><i data-lucide="${o.icon}"></i></div><div class="nm cinzel">${o.name}</div><div class="ds">${o.ds}</div>${pips}<div class="card-rank">${o.consumable?'TAKE THE WARMTH':rank?'RANK '+(rank+1):'NEW BLESSING'}</div>`;el._up=o;on(el,'click',()=>chooseCard(i));wrap.appendChild(el);
  }
  G.cardPool=picks;const mythic=picks.find(o=>o.r===3),level=T('levelup'),frame=T('luWrap');level.classList.toggle('mythic-offer',!!mythic);frame.classList.toggle('mythic-draft',!!mythic);
  if(mythic)T('luSub').textContent='A MYTHIC BLESSING HAS ANSWERED';
@@ -8389,6 +8385,92 @@ drawLateBossBody=function(ctx,b){if(b.bossKey!=='uncounted')return uncountedDraw
 const uncountedGuardianDefeated=guardianModeGuardianDefeated;
 guardianModeGuardianDefeated=function(b){const gm=G.run?.guardianMode;if(G.run?.mode==='rush'&&b?.bossKey==='keeper'&&gm&&!gm.secret&&gm.defeated===9){cleanupGuardianArena();gm.defeated=10;burst(b.x,b.y,42,'#ffd487',300,.85,3,true);sfx('victory');startUncountedGuardian();return;}if(G.run?.mode==='rush'&&b?.bossKey==='uncounted'&&gm?.secret){cleanupGuardianArena();gm.secretDefeated=true;gm.defeated=11;burst(b.x,b.y,60,'#b9fff1',340,1.1,3,true);sfx('victory');finishBossRush();return;}return uncountedGuardianDefeated(b);};
 
+/* ======================================================================
+   ENDLESS ASCENSION · steep scaling, anti-circle pressure, and safe saves
+   ====================================================================== */
+const ENDLESS_DIFFICULTY_VERSION=3;
+const ENDLESS_BOSS_WEIGHT={bellkeeper:.88,colossus:.94,astronomer:1,scribe:1.06,regents:.62,seraph:1.1,tyrant:1.17,keeper:1.25};
+const endlessLayoutStyle=document.createElement('style');
+endlessLayoutStyle.textContent='@media(max-width:700px){#topC{top:174px}}';
+document.head?.appendChild(endlessLayoutStyle);
+const endlessDepthAt=(f=G.floor)=>Math.max(0,f-50);
+function endlessDifficulty(f=G.floor){
+ const depth=endlessDepthAt(f),enemyHp=(8+depth*.42)*Math.pow(1.035,depth),enemyDmg=(1.2+depth*.035)*Math.pow(1.009,depth),bossBase=130000*Math.pow(1.055,depth)*(1+depth*.04),mechanism=(1+depth*.055)*Math.pow(1.026,depth);
+ return{depth,threat:Math.min(99,1+Math.floor(Math.max(0,depth-1)/10)),enemyHp:Math.min(enemyHp,1e10),enemyDmg:Math.min(enemyDmg,1e7),bossBase:Math.min(bossBase,7e11),mechanism:Math.min(mechanism,1e8),haste:1+Math.min(.62,depth*.009),projectile:1+Math.min(.58,depth*.008),speed:1+Math.min(.3,depth*.0038),reinforcements:Math.min(14,2+Math.floor(Math.max(0,depth-1)/7))};
+}
+function endlessBossTarget(b,f=G.floor){
+ const q=endlessDifficulty(f),weight=ENDLESS_BOSS_WEIGHT[b.bossKey]||1,mutation=endlessMutation(f).key,iron=mutation==='iron'?1.18:1,crowns=1+.25*oathRank('crowns');
+ return Math.max(1,Math.min(8e15,Math.round(q.bossBase*weight*iron*crowns)));
+}
+function applyEndlessEntityDifficulty(e,preserveHealth=false){
+ if(!e||e.dead||!G.run?.infinite||G.floor<=50)return e;const q=endlessDifficulty(),ratio=preserveHealth?clamp(e.hp/Math.max(1,e.max),0,1):1,mutation=endlessMutation(G.floor).key,iron=mutation==='iron'?1.18:1,motion=Math.pow(1.1,oathRank('motion'));
+ if(e.lateBoss){const cfg=LATE_BOSSES[e.type],target=endlessBossTarget(e);e.max=target;e.hp=Math.max(1,Math.round(target*ratio));e.dmg=Math.max(1,Math.round((ENDGAME_DAMAGE[e.bossKey]||e.dmg)*q.enemyDmg));if(cfg)e.spd=cfg.spd*q.speed*motion;e.endlessDamageCeiling=.035;}
+ else{const c=LATE_ENEMIES[e.type]||ETYPES[e.type],mapped=authoredDepth(),d=Math.max(0,mapped-11);if(c){const elite=e.elite?1.7:1,target=Math.max(1,Math.min(8e15,Math.round(c.hp*depthHealth(mapped)*elite*q.enemyHp*iron)));e.max=target;e.hp=Math.max(1,Math.round(target*ratio));e.dmg=Math.max(1,Math.min(1e12,Math.round(c.dmg*(1+d*.025)*q.enemyDmg)));e.spd=c.spd*(1+Math.min(.25,d*.006))*q.speed*(mutation==='relentless'?1.08:1)*motion*(e.specialQuarry?1.08:1);}}
+ e.endlessScaled=true;e.endlessDifficultyVersion=ENDLESS_DIFFICULTY_VERSION;return e;
+}
+function scaleEndlessMechanism(e){
+ if(!e||!G.run?.infinite||G.floor<=50||e.endlessMechanismVersion===ENDLESS_DIFFICULTY_VERSION)return e;const ratio=clamp(e.hp/Math.max(1,e.max),0,1),target=Math.max(1,Math.round(e.max*endlessDifficulty().mechanism));e.max=target;e.hp=Math.max(1,Math.round(target*ratio));e.endlessMechanismVersion=ENDLESS_DIFFICULTY_VERSION;return e;
+}
+function reinforceEndlessFloor(){
+ const q=endlessDifficulty(),w=G.world;if(!w||q.depth<1)return;const blocked=new Set([0,w.rooms.indexOf(w.exit),w.storyRoom,...(w.echoSanctuaries||[]),...(w.specialEncounters||[]).map(sc=>sc.roomIndex)]),rooms=w.rooms.map((r,i)=>({r,i})).filter(o=>!blocked.has(o.i));if(!rooms.length)return;const current=G.enemies.filter(e=>!e.dead&&!e.isBoss&&!e.mechanism).length,add=Math.max(0,Math.min(q.reinforcements,46-current)),region=lateRegion(G.floor),ri=Math.max(0,LATE_REGIONS.indexOf(region)),roster=[...(LATE_ROSTERS[region.key]||[]),...(LATE_ROSTERS[LATE_REGIONS[(ri+1)%LATE_REGIONS.length].key]||[])];
+ for(let i=0;i<add;i++){const r=rooms[(i*5+q.threat)%rooms.length].r,type=roster[(i*3+q.depth)%roster.length],rad=ETYPES[type]?.r||12,pos=safePosition(w,rand((r.x+1.2)*TILE,(r.x+r.w-1.2)*TILE),rand((r.y+1.2)*TILE,(r.y+r.h-1.2)*TILE),rad);if(!pos||d2(pos.x,pos.y,G.player.x,G.player.y)<260**2)continue;const e=spawnEnemy(type,pos.x,pos.y,q.depth>=18&&i===add-1);e.aggro=false;}
+}
+
+const ascensionSpawnEnemy=spawnEnemy;
+spawnEnemy=function(type,x,y,elite){const e=ascensionSpawnEnemy(type,x,y,elite);if(G.run?.infinite&&G.floor>50&&ETYPES[type])applyEndlessEntityDifficulty(e,false);return e;};
+const ascensionSetupFloor=setupFloor;
+setupFloor=function(f){const out=ascensionSetupFloor(f);if(!G.run?.infinite||f<=50||!G.world)return out;G.enemies=G.enemies.filter(e=>!e.dead);for(const e of G.enemies)applyEndlessEntityDifficulty(e,false);reinforceEndlessFloor();G.world.endlessDifficultyVersion=ENDLESS_DIFFICULTY_VERSION;G.world.endlessThreat=endlessDifficulty(f).threat;G.world.endlessPressure=G.world.endlessPressure&&Number.isFinite(G.world.endlessPressure.t)?G.world.endlessPressure:{t:5.5,step:0};updateHUD(0);saveNow();return out;};
+
+const ascensionMidPiece=placeMidGuardianPiece;
+placeMidGuardianPiece=function(b,kind,slot,count,radius,hp){const e=ascensionMidPiece(b,kind,slot,count,radius,G.run?.infinite&&G.floor>50?Math.round(hp*endlessDifficulty().mechanism):hp);if(e)e.endlessMechanismVersion=ENDLESS_DIFFICULTY_VERSION;return e;};
+const ascensionPlaceMechanisms=placeMechanisms;
+placeMechanisms=function(b,kind,count){const before=new Set(G.enemies);const out=ascensionPlaceMechanisms(b,kind,count);if(G.run?.infinite&&G.floor>50)for(const e of G.enemies)if(!before.has(e)&&e.mechanism)scaleEndlessMechanism(e);return out;};
+const ascensionMidState=midGuardianState;
+midGuardianState=function(b){const ratio=clamp(b.hp/Math.max(1,b.max),0,1),m=ascensionMidState(b);if(G.run?.infinite&&G.floor>50){const target=endlessBossTarget(b);if(b.max!==target){b.max=target;b.hp=Math.max(1,Math.round(target*ratio));b.dmg=Math.max(1,Math.round((ENDGAME_DAMAGE[b.bossKey]||b.dmg)*endlessDifficulty().enemyDmg));b.endlessDamageCeiling=.035;}b.endlessDifficultyVersion=ENDLESS_DIFFICULTY_VERSION;}return m;};
+
+const ascensionDamageEnemy=damageEnemy;
+damageEnemy=function(e,dmg,ang,crit,kb,kind='shot'){if(e?.bossKey==='bellkeeper'&&(e.bs?.mode==='submerge'||e.bs?.mid?.invulnerable))return;return ascensionDamageEnemy(e,dmg,ang,crit,kb,kind);};
+const ascensionLateEnemyAI=lateEnemyAI;
+lateEnemyAI=function(e,dt,d,dx,dy){return ascensionLateEnemyAI(e,G.run?.infinite&&G.floor>50?dt*endlessDifficulty().haste:dt,Math.max(1,d),dx,dy);};
+const ascensionLateBossAI=lateBossAI;
+lateBossAI=function(b,dt,d,dx,dy){return ascensionLateBossAI(b,G.run?.infinite&&G.floor>50?dt*endlessDifficulty().haste:dt,Math.max(1,d),dx,dy);};
+const ascensionEnemyShoot=enemyShoot;
+enemyShoot=function(e,ang,spd,dmg){if(G.run?.infinite&&G.floor>50)spd*=endlessDifficulty().projectile;return ascensionEnemyShoot(e,ang,spd,dmg);};
+const ascensionLateShot=lateShot;
+lateShot=function(e,ang,spd,dmg,col){if(G.run?.infinite&&G.floor>50)spd*=endlessDifficulty().projectile;return ascensionLateShot(e,ang,spd,dmg,col);};
+
+function fireEndlessPressure(){
+ const b=G.boss,p=G.player,w=G.world;if(!b?.introduced||!b.lateBoss||!p||!w?.lateHazards)return;const q=endlessDifficulty(),s=w.endlessPressure,a=arenaBounds(),lead=Math.min(.55,.22+q.depth*.0035),tx=clamp(p.x+(p.vigilVX||0)*lead,a.left+38,a.right-38),ty=clamp(p.y+(p.vigilVY||0)*lead,a.top+38,a.bottom-38),laws=q.depth<10?1:q.depth<25?2:3,law=s.step++%laws;
+ if(law===0){const n=q.depth>=50?5:q.depth>=20?4:3;for(let i=0;i<n;i++){const turn=(i-(n-1)/2)*.64,r=22+i*21;encounterHazard(b,'shell',clamp(tx+Math.cos(turn)*r,a.left+34,a.right-34),clamp(ty+Math.sin(turn)*r,a.top+34,a.bottom-34),0,{delay:.52+i*.12,life:.34,radius:30+Math.min(10,q.threat),damageMul:.48});}}
+ else if(law===1){encounterHazard(b,'annulus',a.cx,a.cy,0,{delay:.62,life:1.75,radius:20,expand:145+q.threat*5,width:11,damageMul:.52});for(let i=0;i<10+Math.min(8,q.threat);i++){const ang=i*TAU/(10+Math.min(8,q.threat));if(Math.abs(angleDiff(ang,Math.atan2(p.y-a.cy,p.x-a.cx)))<.34)continue;lateShot(b,ang,205+q.threat*5,b.dmg*.42,b.col);}}
+ else{encounterHazard(b,'rotor',a.cx,a.cy,-Math.PI/2,{delay:.72,life:3.65,len:Math.hypot(a.right-a.left,a.bottom-a.top),turn:(s.step%2?1:-1)*(.68+Math.min(.34,q.depth*.004)),arms:q.depth>=70?3:2,width:8,damageMul:.55});}
+ if(!G.run.endlessPressureSeen){G.run.endlessPressureSeen=true;fieldNote('The depth has learned your route.',2.8);}s.t=Math.max(4.2,8.2-q.depth*.035);
+}
+function tickEndlessPressure(dt){if(!G.run?.infinite||G.floor<=50||G.state!=='playing'||!G.bossActive||!G.boss?.introduced)return;const s=G.world.endlessPressure||(G.world.endlessPressure={t:5.5,step:0});s.t-=dt;if(s.t<=0)fireEndlessPressure();}
+const ascensionBeforeUpdate=hollowBeforeUpdate;
+hollowBeforeUpdate=function(dt){const stopped=ascensionBeforeUpdate(dt);if(!stopped)tickEndlessPressure(dt);return stopped;};
+
+const ascensionUseFlame=useRestingFlame;
+useRestingFlame=function(o){if(!G.run?.infinite||o.lit){ascensionUseFlame(o);return;}o.lit=true;const q=endlessDifficulty(),base=bossFloorAt(G.floor)?.28:.22,fatigue=Math.max(.36,1/(1+q.depth*.016)),penalty=Math.pow(.65,oathRank('ash'))*(endlessMutation(G.floor).key==='famine'?.55:1),heal=Math.max(1,Math.ceil(G.player.maxHp*base*fatigue*penalty));cardHeal(heal,'RESTING FLAME · '+heal+' HEALTH');G.world.torches.push({x:o.x,y:o.y-15,s:0});burst(o.x,o.y,24,'#ffd083',145,1,3,true);sfx('brazier');saveNow();};
+
+const ascensionChooseCard=chooseCard;
+chooseCard=function(i){
+ const o=G.state==='levelup'&&G.cardPool?.[i];if(!o?.consumable)return ascensionChooseCard(i);cardHeal(Math.max(25,Math.ceil(G.player.maxHp*.15)),'EMBERGLOW');sfx('buy');G.pendingLevels=Math.max(0,G.pendingLevels-1);G.cardPool=null;if(G.pendingLevels>0)triggerLevelup();else{hide('levelup');setState('playing');G.player.hitCd=Math.max(G.player.hitCd,.8);nova(G.player.x,G.player.y,150,30);}saveNow();
+};
+
+const ascensionHUD=updateHUD;
+updateHUD=function(dt){ascensionHUD(dt);if(!G.run?.infinite||G.floor<=50)return;const q=endlessDifficulty(),m=endlessMutation(G.floor),oaths=Object.values(G.run.endlessOaths||{}).reduce((a,b)=>a+b,0);setTxt('floorObjective','ENDLESS '+q.depth+' · THREAT '+q.threat+' · '+m.name+(oaths?' · '+oaths+' OATH'+(oaths===1?'':'S'):''));};
+const ascensionSnapshot=snapshotRun;
+snapshotRun=function(){ascensionSnapshot();if(save.resume&&G.run?.infinite&&G.world){save.resume.world.endlessDifficultyVersion=ENDLESS_DIFFICULTY_VERSION;save.resume.world.endlessThreat=G.world.endlessThreat||endlessDifficulty().threat;save.resume.world.endlessPressure=deepCopy(G.world.endlessPressure||{t:5.5,step:0});}};
+const ascensionValidateCheckpoint=validateCheckpoint;
+validateCheckpoint=function(r){const out=ascensionValidateCheckpoint(r);if(!r?.run?.infinite)return out;const fail=()=>{throw Error('Invalid Endless data');},o=r.run.endlessOaths,c=r.run.endlessOathChosen,p=r.world?.endlessPressure;if(o!==undefined&&(typeof o!=='object'||Array.isArray(o)))fail();if(o)for(const [id,n]of Object.entries(o))if(!ENDLESS_OATHS.some(q=>q.id===id)||!Number.isInteger(n)||n<0||n>100000)fail();if(c!==undefined&&(!Array.isArray(c)||c.length>100000||c.some(n=>!Number.isInteger(n)||n<51||n>1000000)))fail();if(r.run.endlessOathPending!==undefined&&(!Number.isInteger(r.run.endlessOathPending)||r.run.endlessOathPending<0||r.run.endlessOathPending>1000000))fail();if(r.run.endlessStacks!==undefined&&(!Number.isInteger(r.run.endlessStacks)||r.run.endlessStacks<0||r.run.endlessStacks>1000000))fail();if(p!==undefined&&(!p||!Number.isFinite(p.t)||!Number.isInteger(p.step)||Math.abs(p.t)>100000||p.step<0||p.step>1000000))fail();return out;};
+const ascensionResume=resumeRun;
+resumeRun=function(){ascensionResume();if(!G.run?.infinite||G.floor<=50||!G.world)return;G.run.endlessOaths=G.run.endlessOaths||{};G.run.endlessOathChosen=G.run.endlessOathChosen||[];for(const e of G.enemies){if(e.mechanism){if(e.endlessMechanismVersion!==ENDLESS_DIFFICULTY_VERSION)scaleEndlessMechanism(e);}else if(e.endlessDifficultyVersion!==ENDLESS_DIFFICULTY_VERSION)applyEndlessEntityDifficulty(e,true);}G.world.endlessDifficultyVersion=ENDLESS_DIFFICULTY_VERSION;G.world.endlessThreat=endlessDifficulty().threat;G.world.endlessPressure=G.world.endlessPressure&&Number.isFinite(G.world.endlessPressure.t)?G.world.endlessPressure:{t:5.5,step:0};updateHUD(0);saveNow();};
+
+const ascensionBlocking=anyBlockingOverlay;
+anyBlockingOverlay=function(){return !!T('endlessOath')?.classList.contains('open')||ascensionBlocking();};
+const ascensionEsc=onEscKey;
+onEscKey=function(){if(T('endlessOath')?.classList.contains('open')){T('oathGrid')?.firstChild?.focus({preventScroll:true});return;}return ascensionEsc();};
 installGuardianModes();
 
 init();
