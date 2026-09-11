@@ -89,11 +89,10 @@ saveNow=function(reason='auto'){
 
 const verifiedSyncSaveStatus=syncSaveStatus;
 syncSaveStatus=function(){
- verifiedSyncSaveStatus();if(!T('saveStatus')||storageMessage)return;
+ verifiedSyncSaveStatus();if(storageMessage)return;
  const time=saveLastTime?new Date(saveLastTime).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'';
- T('saveStatus').textContent='PROGRESS VERIFIED'+(time?' · '+time:'');
- T('settingsSave').textContent='Automatic saving uses two rotating checkpoints plus a compact emergency copy. Boss Rush saves at every bell and your campaign run is kept separately.';
- T('settingsSave').classList.remove('warning');
+ if(T('saveStatus'))T('saveStatus').textContent='PROGRESS VERIFIED'+(time?' · '+time:'');
+ if(T('settingsSave')){T('settingsSave').textContent='Automatic saving uses two rotating checkpoints plus a compact emergency copy. Boss Rush saves at every bell and your campaign run is kept separately.';T('settingsSave').classList.remove('warning');}
 };
 
 const verifiedResetEverything=resetEverything;
