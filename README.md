@@ -12,10 +12,12 @@ VoidFall is now maintained as a modular browser game. The current save key and s
 - `src/render/` owns sprites, environment art, the Ember, and the world interface.
 - `src/chapters/`, `src/enemies/`, and `src/bosses/` contain encounter-specific behavior.
 - `src/progression/` contains blessings, rarity, forms, and the permanent skill tree.
-- `src/story/` contains recovered traces, remembered rooms, and all Echo tableaus.
+- `src/story/` contains the hidden Living Archive state, recovered traces, remembered rooms, and all fifty Echo tableaus.
 - `src/input/`, `src/combat/`, `src/audio/`, and `src/interface/` contain focused supporting systems.
 
 Scripts are loaded in a deliberate order at the bottom of `index.html`. This first refactor preserves the existing shared runtime so gameplay remains identical. Future changes can replace individual systems with explicit modules without another large extraction.
+
+The Living Archive records behavior rather than presenting an alignment meter. Echo attention, interrupted memories, protected rooms, Resting Flames, and guardian finishes can alter later dialogue, guardian adaptation, environmental details, and the campaign ending. Echo rooms remain enemy-free and let the player move or tap toward the people or evidence inside each restored tableau.
 
 ## Running the game
 

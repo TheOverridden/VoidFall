@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="styles/overlays.css">
 <link rel="stylesheet" href="styles/interface.css">
 <link rel="stylesheet" href="styles/campaign.css">
+<link rel="stylesheet" href="styles/story.css">
 </head>
 <body>
 
@@ -204,12 +205,12 @@
 <table><thead><tr><th>Floor</th><th>Place</th><th>Encounters &amp; story</th></tr></thead><tbody>
 <tr><td>6</td><td>The Overgrown Walk</td><td>Moss slimes and petal bats, usually one or two together. Wick is more afraid of the roots than he admits.</td></tr>
 <tr><td>7</td><td>Glasshouse Ruins</td><td>Thorn spitters and bramble beds. Moving stems give warning before thorns rise. Pruning Flare joins the blessing pool.</td></tr>
-<tr><td>8</td><td>The Still Courtyard</td><td>Barkbacks appear in small groups. A sign in your handwriting starts a conversation with a choice.</td></tr>
+<tr><td>8</td><td>The Still Courtyard</td><td>Barkbacks appear in small groups. A sign in your handwriting reveals what the garden remembers.</td></tr>
 <tr><td>9</td><td>The Nursery</td><td>Small mixed pairs with quiet rooms between encounters. The echoes disagree about how many people were left here.</td></tr>
 <tr><td>10</td><td>The Root Chamber</td><td>The Hollow Matriarch: a sprawling, organic creature that tends nests and spreads roots across the arena.</td></tr>
 </tbody></table>
 <h3>The Hollow Matriarch</h3><p>Choose between attacking her and clearing what she plants. Roots grow into thorny paths; nests hatch small creatures. Both can be destroyed with Ember Bolt or Flare. There are at most two nests and two hatchlings in her first phase, or three hatchlings in her second.</p><p>Her claws draw back before raking, her arms follow your path before committing to a root lash, and her flower face brightens before she spits seeds. There are no giant circles to step out of. Below half health she blooms, links claw attacks, and grows roots faster. Recovery leaves her exposed to Flare.</p><p>The fight has its own portrait, introduction, aftermath, sealed arena, music intensity, and chapter ending. Boss conversations are remembered across descents and return after Reset Everything. Winning unlocks Afterbloom: critical hits can heal two health, once per second.</p>
-<h3>Encounter size &amp; progression</h3><p>The starting room is clear. Floor 1 has at most five creatures spread across separate rooms, with only one attacking at a time. Floors 2–4 have caps of 7, 8, and 9; pairs appear gradually. The Warden's approach has at most four ordinary enemies. Floors 6–9 have caps of 9, 11, 12, and 14, with at most two creatures placed together. The Matriarch's approach has at most five.</p><p>Enemies notice you from closer range, and the first room of each floor gives you space to get your bearings. At most two ordinary enemies engage together on floors 2–3, three on floors 4–7, and four on floors 8–10. Each enemy gives 50% more XP to keep upgrades coming. Existing checkpoints are thinned when resumed. Larger crowds belong to later chapters.</p><p>Fifty recovered traces, conversations, earned blessings, and saved choices connect the ten stages. Generated maps, hazards, boss phases, memories, and rewards all survive save and resume. Each major system now lives in its own maintainable source file.</p>
+<h3>Encounter size &amp; progression</h3><p>The starting room is clear. Floor 1 has at most five creatures spread across separate rooms, with only one attacking at a time. Floors 2–4 have caps of 7, 8, and 9; pairs appear gradually. The Warden's approach has at most four ordinary enemies. Floors 6–9 have caps of 9, 11, 12, and 14, with at most two creatures placed together. The Matriarch's approach has at most five.</p><p>Enemies notice you from closer range, and the first room of each floor gives you space to get your bearings. At most two ordinary enemies engage together on floors 2–3, three on floors 4–7, and four on floors 8–10. Each enemy gives 50% more XP to keep upgrades coming. Existing checkpoints are thinned when resumed. Larger crowds belong to later chapters.</p><p>Fifty recovered rooms, conversations, earned blessings, and player-shaped memories connect the ten stages. Generated maps, hazards, boss phases, memories, and rewards all survive save and resume. Each major system now lives in its own maintainable source file.</p>
 <h3>The ten stages</h3><p>Floors 1–50 are playable. Every five-floor region has its own roster, hazards, records, and guardian:</p>
 <table><tbody>
 <tr><td>11–15</td><td>The Drowned Reservoir</td><td>ACTIVE · The Bellkeeper moves beneath the channels; ripples reveal where it will surface.</td></tr>
@@ -266,6 +267,7 @@
 <script src="src/bosses/final-tuning.js"></script>
 <script src="src/bosses/secret-boss.js"></script>
 <script src="src/game/endless-hardening.js"></script>
+<script src="src/story/living-archive.js"></script>
 <script src="src/core/boot.js"></script>
 </body>
 </html>
