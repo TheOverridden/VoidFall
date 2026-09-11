@@ -3,6 +3,7 @@
    Two rotating full checkpoints, a compact emergency copy, read-back
    verification, automatic recovery, and stale-tab overwrite protection.
    ====================================================================== */
+document.documentElement.dataset.saveSystem='loading';
 const SAVE_SCHEMA=2;
 const SAVE_SLOT_KEYS=[SAVE_KEY+'_slot_a',SAVE_KEY+'_slot_b'];
 const SAVE_EMERGENCY_KEY=SAVE_KEY+'_emergency';
@@ -106,3 +107,4 @@ addEventListener('storage',event=>{
 });
 
 globalThis.VoidFallSaveSystem={version:SAVE_SCHEMA,get revision(){return saveRevision;},get lastSavedAt(){return saveLastTime;},get recovered(){return saveRecovered;},keys:{primary:SAVE_KEY,slots:[...SAVE_SLOT_KEYS],emergency:SAVE_EMERGENCY_KEY,manifest:SAVE_MANIFEST_KEY}};
+document.documentElement.dataset.saveSystem='ready-v2';
