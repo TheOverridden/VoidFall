@@ -164,15 +164,27 @@ function lateEnemySpecial(e,dt,d,dx,dy){
   }
   return false;
 }
+const LATE_GAITS={
+ rippleLeech:{near:92,far:148,orbit:.12,tempo:1.18},pumpCrawler:{near:145,far:215,orbit:.56,tempo:.72},lampEel:{near:245,far:350,orbit:-.28,tempo:.82},sluiceGuard:{near:165,far:235,orbit:.08,tempo:.58},
+ coalMite:{near:75,far:130,orbit:-.12,tempo:1.3},slagRunner:{near:125,far:205,orbit:.72,tempo:1.05},cinderValve:{near:260,far:370,orbit:.44,tempo:.68},hammerFrame:{near:135,far:205,orbit:-.05,tempo:.5},
+ glassShard:{near:80,far:155,orbit:.34,tempo:1.42},lensMote:{near:285,far:410,orbit:-.5,tempo:.62},orbitHound:{near:120,far:205,orbit:.86,tempo:1.1},mirrorShell:{near:175,far:250,orbit:-.18,tempo:.46},
+ inkMite:{near:78,far:145,orbit:-.38,tempo:1.18},pageWraith:{near:150,far:235,orbit:.66,tempo:.9},quillSentinel:{near:270,far:395,orbit:-.24,tempo:.6},indexer:{near:185,far:265,orbit:.06,tempo:.42},
+ courtMask:{near:95,far:165,orbit:.48,tempo:1.28},ribbonDuelist:{near:125,far:215,orbit:-.92,tempo:1.02},hushBell:{near:250,far:355,orbit:.16,tempo:.54},mourningGuard:{near:180,far:255,orbit:-.06,tempo:.4},
+ choirWisp:{near:86,far:160,orbit:.74,tempo:1.4},pinion:{near:115,far:210,orbit:-1.02,tempo:1.2},cantor:{near:270,far:405,orbit:.38,tempo:.58},bellAngel:{near:170,far:255,orbit:-.32,tempo:.48},
+ obsidianPawn:{near:90,far:165,orbit:.04,tempo:1.08},chainHound:{near:120,far:210,orbit:.7,tempo:1.06},siegeEye:{near:300,far:440,orbit:-.12,tempo:.5},barrierKnight:{near:170,far:245,orbit:.03,tempo:.38},
+ memoryAsh:{near:80,far:155,orbit:-.82,tempo:1.45},starRemnant:{near:145,far:245,orbit:.94,tempo:1.16},keeperHand:{near:260,far:400,orbit:-.52,tempo:.7},oathbound:{near:175,far:250,orbit:.09,tempo:.42}
+};
 function lateEnemyAI(e,dt,d,dx,dy){
-  const p=G.player,w=G.world;e.actionT-=dt;e.face=Math.atan2(dy,dx);const role=e.lateRole;if(lateEnemySpecial(e,dt,d,dx,dy))return;
+  const p=G.player,w=G.world;e.actionT-=dt;e.face=Math.atan2(dy,dx);const role=e.lateRole,gait=LATE_GAITS[e.type]||{near:130,far:220,orbit:0,tempo:1};if(lateEnemySpecial(e,dt,d,dx,dy))return;
   if(e.action==='warn'){if(e.actionT>0)return;if(role==='ranged'){const n=e.elite?5:3;for(let i=0;i<n;i++)lateShot(e,e.face+(i-(n-1)/2)*.16,210+G.floor*1.4,e.dmg,e.col);e.action='recover';e.actionT=1.05;return;}e.action='strike';e.actionT=role==='guard'?.42:.28;e.strikeHit=false;return;}
   if(e.action==='strike'){
     const speed=role==='guard'?390:330,hit=moveEnt(w,e,Math.cos(e.face)*speed*dt,Math.sin(e.face)*speed*dt);if(!e.strikeHit&&d<e.r+p.r+9){hurtPlayer(e.dmg,e.x,e.y);e.strikeHit=true;}if(e.actionT<=0||hit){e.action='recover';e.actionT=role==='guard'?1.1:.72;}return;
   }
   if(e.action==='recover'){if(e.actionT<=0){e.action='stalk';e.actionT=rand(.35,.7);}return;}
-  if(role==='ranged'){const step=d>310?1:d<210?-1:0;moveEnt(w,e,dx/d*e.spd*dt*step,dy/d*e.spd*dt*step);if(e.actionT<=0&&d<470&&los(w,e.x,e.y,p.x,p.y)){e.action='warn';e.actionT=e.elite?.42:.6;}return;}
-  if(role==='orbit'){const side=Math.sin(e.seed)*.85,step=d>185?1:d<125?-.45:0;moveEnt(w,e,(dx/d*step-dy/d*side)*e.spd*dt,(dy/d*step+dx/d*side)*e.spd*dt);if(e.actionT<=0&&d<175){e.action='warn';e.actionT=.48;}return;}
-  moveEnt(w,e,dx/d*e.spd*dt,dy/d*e.spd*dt);if(e.actionT<=0&&d<(role==='guard'?210:145)){e.action='warn';e.actionT=role==='guard'?.75:.42;}
+  const dd=Math.max(1,d),phase=G.t*(2.1*gait.tempo)+(e.seed||0),cadence=.72+.28*Math.sin(phase),step=d>gait.far?1:d<gait.near?-.48:role==='rush'?.3:0;
+  const side=gait.orbit*(role==='guard'?.34:1)*cadence,pace=e.spd*(role==='guard'?.88:1);
+  moveEnt(w,e,(dx/dd*step-dy/dd*side)*pace*dt,(dy/dd*step+dx/dd*side)*pace*dt);
+  const attackRange=role==='ranged'?Math.min(470,gait.far+80):role==='guard'?Math.max(190,gait.far-18):Math.max(145,gait.near+45);
+  if(e.actionT<=0&&d<attackRange&&(role!=='ranged'||los(w,e.x,e.y,p.x,p.y))){e.action='warn';e.actionT=(role==='guard'?.72:role==='ranged'?.56:.42)/Math.max(.82,gait.tempo);}
 }
 function announceLateFloor(){const r=lateRegion(G.floor),f=lateFloorInfo(G.floor);if(!r||!f)return;T('chapterRegion').textContent='STAGE '+roman(r.stage)+' · '+r.name.toUpperCase();T('chapterPlace').textContent=f[0];T('chapterHint').textContent=f[1];chapterBannerT=4;T('chapterBanner').classList.add('visible');}
