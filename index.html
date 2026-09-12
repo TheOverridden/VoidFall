@@ -201,29 +201,7 @@
     </div>
   </section>
 </div>
-<div id="memories" class="ov"><div class="panel memories-panel"><div class="memories-heading"><div><span class="eyebrow">THINGS THAT STAY</span><h2>Memories</h2></div><button class="btn" id="memoriesClose">BACK</button></div><p class="memories-intro">Conversations and traces recovered in the depths.</p><details class="chapter-plan"><summary>Chapter II · Plan &amp; features <span>spoilers</span></summary><div>
-<h3>The Rootbound Gardens · floors 6–10</h3><p>Tangled roots, abandoned courtyards, broken glasshouses, and strange growth. Room sizes, positions, corridors, and loops are generated fresh. Echoes and the boss are placed into the connected map.</p>
-<table><thead><tr><th>Floor</th><th>Place</th><th>Encounters &amp; story</th></tr></thead><tbody>
-<tr><td>6</td><td>The Overgrown Walk</td><td>Moss slimes and petal bats, usually one or two together. Wick is more afraid of the roots than he admits.</td></tr>
-<tr><td>7</td><td>Glasshouse Ruins</td><td>Thorn spitters and bramble beds. Moving stems give warning before thorns rise. Pruning Flare joins the blessing pool.</td></tr>
-<tr><td>8</td><td>The Still Courtyard</td><td>Barkbacks appear in small groups. A sign in your handwriting reveals what the garden remembers.</td></tr>
-<tr><td>9</td><td>The Nursery</td><td>Small mixed pairs with quiet rooms between encounters. The echoes disagree about how many people were left here.</td></tr>
-<tr><td>10</td><td>The Root Chamber</td><td>The Hollow Matriarch: a sprawling, organic creature that tends nests and spreads roots across the arena.</td></tr>
-</tbody></table>
-<h3>The Hollow Matriarch</h3><p>Choose between attacking her and clearing what she plants. Roots grow into thorny paths; nests hatch small creatures. Both can be destroyed with Ember Bolt or Flare. There are at most two nests and two hatchlings in her first phase, or three hatchlings in her second.</p><p>Her claws draw back before raking, her arms follow your path before committing to a root lash, and her flower face brightens before she spits seeds. There are no giant circles to step out of. Below half health she blooms, links claw attacks, and grows roots faster. Recovery leaves her exposed to Flare.</p><p>The fight has its own portrait, introduction, aftermath, sealed arena, music intensity, and chapter ending. Boss conversations are remembered across descents and return after Reset Everything. Winning unlocks Afterbloom: critical hits can heal two health, once per second.</p>
-<h3>Encounter size &amp; progression</h3><p>The starting room is clear. Floor 1 has at most five creatures spread across separate rooms, with only one attacking at a time. Floors 2–4 have caps of 7, 8, and 9; pairs appear gradually. The Warden's approach has at most four ordinary enemies. Floors 6–9 have caps of 9, 11, 12, and 14, with at most two creatures placed together. The Matriarch's approach has at most five.</p><p>Enemies notice you from closer range, and the first room of each floor gives you space to get your bearings. At most two ordinary enemies engage together on floors 2–3, three on floors 4–7, and four on floors 8–10. Each enemy gives 50% more XP to keep upgrades coming. Existing checkpoints are thinned when resumed. Larger crowds belong to later chapters.</p><p>Fifty recovered rooms, conversations, earned blessings, and player-shaped memories connect the ten stages. Generated maps, hazards, boss phases, memories, and rewards all survive save and resume. Each major system now lives in its own maintainable source file.</p>
-<h3>The ten stages</h3><p>Floors 1–50 are playable. Every five-floor region has its own roster, hazards, records, and guardian:</p>
-<table><tbody>
-<tr><td>11–15</td><td>The Drowned Reservoir</td><td>ACTIVE · The Bellkeeper moves beneath the channels; ripples reveal where it will surface.</td></tr>
-<tr><td>16–20</td><td>The Ember Foundry</td><td>ACTIVE · The Ember Colossus overheats the arena and opens its vents while cooling.</td></tr>
-<tr><td>21–25</td><td>The Shattered Observatory</td><td>ACTIVE · The Glass Astronomer redirects beams through floating lenses.</td></tr>
-<tr><td>26–30</td><td>The Buried Archive</td><td>ACTIVE · The Pale Scribe writes attack paths into the floor.</td></tr>
-<tr><td>31–35</td><td>The Silent Court</td><td>ACTIVE · The Twin Regents fight as a pair and change when one falls.</td></tr>
-<tr><td>36–40</td><td>The Choir Spire</td><td>ACTIVE · The Void Seraph dives from the dark and folds volleys into wings.</td></tr>
-<tr><td>41–45</td><td>The Black Citadel</td><td>ACTIVE · The Obsidian Tyrant advances behind barriers and siege fire.</td></tr>
-<tr><td>46–50</td><td>The Heart of the Star</td><td>ACTIVE · The First Keeper remembers every guardian that came before.</td></tr>
-</tbody></table>
-</div></details>
+<div id="memories" class="ov"><div class="panel memories-panel"><div class="memories-heading"><div><span class="eyebrow">THINGS THAT STAY</span><h2>Memories</h2></div><button class="btn" id="memoriesClose">BACK</button></div><p class="memories-intro">Conversations and traces recovered in the depths.</p>
 <div id="memoryList"></div><div id="memoryEmpty">Nothing yet. Take the first step.</div><h3 class="armory-heading">Earned blessings</h3><div id="armoryList"></div></div></div>
 <div id="chapterClear" class="ov"><div class="panel chapter-clear-panel"><div class="chapter-seal" id="chapterSeal" aria-hidden="true">Ⅰ</div><div class="eyebrow" id="chapterCompleteLabel">CHAPTER I COMPLETE</div><h2 id="chapterCompleteTitle">The Hollow Gate</h2><p id="chapterCompleteText">The Warden has lowered his weapon.<br>Beyond him, the stairs keep going.</p><div id="chapterStats" class="statsgrid"></div><div class="chapter-quote" id="chapterQuote">“You asked me to stop you.”</div><div class="btnrow"><button class="btn primary" id="chapterContinue">DESCEND FURTHER</button><button class="btn" id="chapterSave">SAVE & RETURN</button></div><button class="text-button" id="chapterExplore">Stay and look around</button></div></div>
 
@@ -269,6 +247,7 @@
 <script src="src/bosses/secret-boss.js"></script>
 <script src="src/game/endless-hardening.js"></script>
 <script src="src/story/living-archive.js"></script>
+<script src="src/story/story-rewrite.js?v=2"></script>
 <script src="src/enemies/creature-pass.js?v=2"></script>
 <script src="src/bosses/adaptive-guardians.js?v=1"></script>
 <script src="src/core/save-system.js?v=bb7d539"></script>
