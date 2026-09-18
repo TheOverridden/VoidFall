@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <meta http-equiv="refresh" content="0; url=https://theoverridden.github.io/The-Seventh-Ember/">
+  <link rel="canonical" href="https://theoverridden.github.io/The-Seventh-Ember/">
+  <title>The Seventh Ember</title>
+  <style>
+    :root { color-scheme: dark; font-family: Georgia, "Times New Roman", serif; }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: #f4e7cf;
+      background:
+        radial-gradient(circle at 50% 45%, rgba(208, 103, 42, .17), transparent 24rem),
+        linear-gradient(150deg, #120e10, #060608 60%, #110b08);
+    }
+    main { position: relative; padding: 3rem; text-align: center; }
+    main::before {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: 6rem;
+      height: 6rem;
+      translate: -50% -50%;
+      border: 1px solid rgba(231, 153, 82, .35);
+      rotate: 45deg;
+      animation: breathe 1.8s ease-in-out infinite;
+    }
+    p { position: relative; margin: 0 0 1.1rem; letter-spacing: .12em; text-transform: uppercase; }
+    a { position: relative; color: #f3b36e; text-underline-offset: .3em; }
+    @keyframes breathe { 50% { scale: 1.12; opacity: .52; } }
+    @media (prefers-reduced-motion: reduce) { main::before { animation: none; } }
+  </style>
+  <script>
+    const destination = new URL("https://theoverridden.github.io/The-Seventh-Ember/");
+    destination.search = window.location.search;
+    destination.hash = window.location.hash;
+    window.location.replace(destination.href);
+  </script>
+</head>
+<body>
+  <main>
+    <p>VoidFall is now The Seventh Ember.</p>
+    <a href="https://theoverridden.github.io/The-Seventh-Ember/">Continue to the game</a>
+  </main>
+</body>
+</html>
